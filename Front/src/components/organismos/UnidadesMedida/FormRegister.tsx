@@ -3,15 +3,15 @@ import { addToast, Input, Select, SelectItem } from "@heroui/react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { UnidadCreate, UnidadCreateSchema } from "@/schemas/Unidad";
+import { UnidadMedidaCreate, UnidadMedidaCreateSchema } from "@/schemas/UnidadMedida";
 
 type FormularioProps = {
-  addData: (unidad: UnidadCreate) => Promise<void>;
+  addData: (unidad: UnidadMedidaCreate) => Promise<void>;
   onClose: () => void;
   id: string;
 };
 
-export default function FormularioUnidades({
+export default function FormularioUnidadesMedida({
   addData,
   onClose,
   id,
@@ -21,21 +21,22 @@ export default function FormularioUnidades({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<UnidadCreate>({
-    resolver: zodResolver(UnidadCreateSchema),
+  } = useForm<UnidadMedidaCreate>({
     mode: "onChange",
+    resolver: zodResolver(UnidadMedidaCreateSchema),
     defaultValues: {
+      nombre: "",
       estado: true,
     },
   });
 
-  const onSubmit = async (data: UnidadCreate) => {
+  const onSubmit = async (data: UnidadMedidaCreate) => {
     try {
       await addData(data);
       onClose();
       addToast({
         title: "Registro Exitoso",
-        description: "Unidad agregada correctamente",
+        description: "Unidad de medida agregada correctamente",
         color: "success",
         timeout: 3000,
         shouldShowTimeoutProgress: true,
@@ -44,8 +45,6 @@ export default function FormularioUnidades({
       console.error("Error al guardar:", error);
     }
   };
-
-  console.log("Errores", errors);
 
   return (
     <Form
@@ -57,7 +56,7 @@ export default function FormularioUnidades({
         label="Nombre"
         placeholder="Nombre"
         type="text"
-        {...register("nombre")}
+        {...register("nombre", { required: "El nombre es requerido" })}
         errorMessage={errors.nombre?.message}
         isInvalid={!!errors.nombre}
       />
@@ -68,13 +67,11 @@ export default function FormularioUnidades({
           <Select
             label="Estado"
             placeholder="Seleccione un estado"
-            {...field}
-            isDisabled
-            defaultSelectedKeys={["true"]}
-            errorMessage={errors.estado?.message}
-            isInvalid={!!errors.estado}
-            value={field.value ? "true" : "false"}
-            onChange={(e) => field.onChange(e.target.value === "true")}
+            selectedKeys={[field.value ? "true" : "false"]}
+            onSelectionChange={(keys) => {
+              const selected = Array.from(keys)[0];
+              field.onChange(selected === "true");
+            }}
           >
             <SelectItem key="true">Activo</SelectItem>
             <SelectItem key="false">Inactivo</SelectItem>

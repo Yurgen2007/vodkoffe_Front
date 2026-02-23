@@ -2,21 +2,22 @@ import { Route, Routes } from "react-router-dom";
 
 import Layout from "./layouts/layout";
 import Home from "./pages/Home/Home";
-import { InventarioSitio } from "./pages/Bodega/Inventario/Sitios/InventarioSitio";
 import { Inventario } from "./pages/Bodega/Inventarios";
 import Login from "./pages/Login";
 import UsersTable from "./pages/Admin/usuarios";
 import { RolTable } from "./pages/Admin/Roles";
-import SitiosTable from "./pages/Admin/sitios";
-import { ElementosTable } from "./pages/Bodega/Elementos";
 import { UnidadTable } from "./pages/Bodega/UnidadesMedida";
-import CategoriasTable from "./pages/Admin/categorias";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import ForgotPassword from "./pages/ForgotPassword";
 import { CaracteristicasTable } from "./pages/Bodega/Caracteristicas";
 import ResetPassword from "./pages/ResetPassword";
 import Perfil from "./pages/Perfil";
 import { AccesoPage } from "./pages/Admin/Acceso";
+import LotesPage from "./pages/Bodega/Lotes";
+import UnidadesPage from "./pages/Bodega/Unidades";
+import MovimientosPage from "./pages/Bodega/Movimientos";
+import MateriasPrimasPage from "./pages/Bodega/MateriasPrimas";
+
 
 function App() {
   return (
@@ -28,20 +29,17 @@ function App() {
           <Route element={<UsersTable />} path="admin/usuarios" />
           <Route element={<RolTable />} path="admin/roles" />
           <Route element={<AccesoPage />} path="admin/acceso" />
-          <Route element={<SitiosTable />} path="admin/sitios" />
-          <Route element={<ElementosTable />} path="bodega/elementos" />
-          <Route element={<UnidadTable />} path="bodega/unidades" />
-          <Route element={<CategoriasTable />} path="bodega/categorias" />
+          <Route element={<UnidadTable />} path="bodega/unidades-medida" />
+          <Route element={<LotesPage />} path="bodega/lotes" />
+          <Route element={<UnidadesPage />} path="bodega/unidades" />
+          <Route element={<MovimientosPage />} path="bodega/movimientos" />
+          <Route element={<MateriasPrimasPage />} path="bodega/materias-primas" />
           <Route
             element={<CaracteristicasTable />}
             path="bodega/caracteristicas"
           />
 
           <Route element={<Inventario />} path="bodega/inventario/" />
-          <Route
-            element={<InventarioSitio />}
-            path="bodega/inventario/areas/:id/sitios/:sitioId"
-          />
         </Route>
       </Route>
 

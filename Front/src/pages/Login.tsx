@@ -1,8 +1,8 @@
 import { Card, CardBody, Input, Spinner } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 
-import Formatrack from "../assets/Formatrack.png";
 import LoginLogo from "../assets/login.png";
 
 import { LoginSchema } from "@/schemas/User";
@@ -22,6 +22,22 @@ function Login({}: Props) {
     mode: "onChange",
   });
 
+  // Efecto para remover el modo oscuro cuando se está en el Login
+  useEffect(() => {
+    // Guardar el tema actual
+    const currentTheme = localStorage.getItem("theme");
+    
+    // Forzar modo claro temporalmente
+    document.documentElement.classList.remove("dark");
+    
+    // Cleanup: restaurar el tema original al desmontar
+    return () => {
+      if (currentTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-darkTeal via-primary to-primaryLight relative overflow-hidden">
       <div className="absolute inset-0 opacity-30 backdrop-blur-lg bg-gradient-to-tr from-darkTeal via-primary to-primaryLight"></div>
@@ -29,8 +45,8 @@ function Login({}: Props) {
       <div className="w-full max-w-3xl flex items-center justify-center p-6">
         <div className="w-full bg-darkTeal/70 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-tealSoft/20 max-w-md mx-auto">
           <div className="flex flex-col items-center">
-            <div className="w-28 h-28 bg-tealSoft/20 rounded-full flex items-center justify-center mb-4">
-              <img src={LoginLogo} alt="logo" className="w-20 h-20 object-contain" />
+            <div className="w-64 h-28 bg-tealSoft/20 rounded-full flex items-center justify-center mb-4">
+              <img src={LoginLogo} alt="logo" className="w-68 h-auto object-contain" />
             </div>
             <h1 className="text-tealSoft text-xl font-semibold mb-4">INICIO DE SESIÓN</h1>
           </div>

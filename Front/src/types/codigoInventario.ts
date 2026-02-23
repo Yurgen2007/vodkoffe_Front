@@ -8,7 +8,4 @@ export type CodigoInventario = {
   fkInventario?: {
     idInventario?: number;
   };
-  fkElemento?: {
-    idElemento?: number;
-  };
 };

@@ -5,7 +5,7 @@ import { getUsuarios } from "@/axios/Usuarios/getUsuarios";
 import { postUsuarios } from "@/axios/Usuarios/postUsuario";
 import { StateUsuario } from "@/axios/Usuarios/putStateUsuario";
 import { updateUsuario } from "@/axios/Usuarios/putUsuario";
-import { User, putUser } from "@/types/Usuario";
+import { User, putUser, postUser } from "@/types/Usuario";
 
 export function useUsuario() {
   const queryClient = useQueryClient();
@@ -73,7 +73,7 @@ export function useUsuario() {
     },
   });
 
-  const addUser = async (usuario: User) => {
+  const addUser = async (usuario: postUser) => {
     return addUserMutation.mutateAsync(usuario);
   };
 

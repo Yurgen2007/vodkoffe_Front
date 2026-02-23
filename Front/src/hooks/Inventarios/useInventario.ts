@@ -64,14 +64,7 @@ export function useInventario() {
 
   const updateInventarioMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Inventario }) => {
-      const {
-        idInventario,
-        acciones,
-        imagenElemento,
-        unidad,
-        tieneCaracteristicas,
-        ...resto
-      } = data;
+      const { idInventario, ...resto } = data;
 
       return putInventario(id, resto as any);
     },
@@ -131,7 +124,6 @@ export function useInventario() {
     mutationFn: agregateStock,
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ["inventarios"] });
-      queryClient.refetchQueries({ queryKey: ["elementos"] });
     },
     onError: (error) => {
       console.error("Error al agregar stock:", error);

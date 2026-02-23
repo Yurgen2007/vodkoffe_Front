@@ -17,13 +17,52 @@ type Auth = {
   idRol: number | undefined;
   setIdRol: React.Dispatch<React.SetStateAction<number | undefined>>;
   permissions: any[];
-
   setPermissions: React.Dispatch<React.SetStateAction<any[]>>;
 };
 
 const AuthContext = createContext<Auth | null>(null);
 
 export const useAuth = () => useContext(AuthContext) as Auth;
+
+// Filtrar submodulos por módulo
+const filterSubmodules = (modulo: any) => {
+  if (!modulo.rutas) return modulo;
+  
+  const moduloNombre = modulo.nombre?.toLowerCase();
+  
+  let filteredRutas = modulo.rutas;
+  
+  if (moduloNombre === 'admin') {
+    // Solo mostrar Usuarios, Roles y Acceso en Admin
+    const allowedSubmodules = [
+      'usuarios',
+      'roles',
+      'acceso'
+    ];
+    filteredRutas = modulo.rutas.filter((ruta: any) => 
+      allowedSubmodules.includes(ruta.nombre?.toLowerCase())
+    );
+  }
+  
+  if (moduloNombre === 'bodega') {
+    // Mostrar solo: unidades, inventarios, lotes, materias primas, movimientos
+    const allowedSubmodules = [
+      'unidades',
+      'inventarios',
+      'lotes',
+      'materias primas',
+      'movimientos'
+    ];
+    filteredRutas = modulo.rutas.filter((ruta: any) => 
+      allowedSubmodules.includes(ruta.nombre?.toLowerCase())
+    );
+  }
+  
+  return {
+    ...modulo,
+    rutas: filteredRutas
+  };
+};
 
 export default function AuthProvider({
   children,
@@ -43,7 +82,17 @@ export default function AuthProvider({
 
   useEffect(() => {
     const token = cookies.get("token");
-    const permissions = cookies.get("permissions");
+    let permissions = cookies.get("permissions");
+
+    // Parsear permissions si es un string JSON
+    if (typeof permissions === 'string') {
+      try {
+        permissions = JSON.parse(permissions);
+      } catch (e) {
+        console.error("Error parsing permissions:", e);
+        permissions = [];
+      }
+    }
 
     if (token) {
       const {
@@ -55,8 +104,11 @@ export default function AuthProvider({
       setIdUser(idUsuario);
       setAuthenticated(true);
     }
-    if (permissions) {
+    if (permissions && Array.isArray(permissions)) {
+      console.log("✅ Permissions cargados desde cookie:", permissions);
       setPermissions(permissions);
+    } else {
+      console.warn("⚠️ Permissions NO son un array o están vacíos:", permissions);
     }
 
     const loadPerfil = async () => {
@@ -80,12 +132,28 @@ export default function AuthProvider({
 
       try {
         const data = await getRefetchPermisos();
+        
+        console.log("📦 Datos de getRefetchPermisos:", data);
+        
+        // Verificar que data sea un array antes de procesar
+        if (!data || !Array.isArray(data)) {
+          console.warn("Data de permisos no es un array:", data);
+          return;
+        }
 
-        setPermissions(data);
-      } catch (error) {}
+        // Filtrar submodulos por módulo
+        const filteredData = data.map((modulo: any) => filterSubmodules(modulo));
+        
+        console.log("✅ Permissions recargados correctamente:", filteredData);
+        setPermissions(filteredData);
+      } catch (error) {
+        console.error("Error al recargar permisos:", error);
+      }
     };
 
-    reloadPermisos();
+    if (token) {
+      reloadPermisos();
+    }
   }, []);
 
   return (

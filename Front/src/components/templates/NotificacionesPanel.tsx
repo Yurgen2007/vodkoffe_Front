@@ -29,28 +29,6 @@ const getTipoBadge = (titulo: string) => {
   return { color: 'bg-gray-100 text-gray-800', icon: '📌', label: 'Notificacion' };
 };
 
-// Funcion para obtener detalles adicionales del elemento
-const getElementoDetails = (noti: any) => {
-  if (noti.data?.idElemento) {
-    const detalles = [];
-    if (noti.data?.codigoBarras) {
-      detalles.push(`Código de barras: ${noti.data.codigoBarras}`);
-    }
-    if (noti.data?.stock) {
-      detalles.push(`Stock actual: ${noti.data.stock} unidades`);
-    }
-    if (noti.data?.diasRestantes) {
-      detalles.push(`Vence en ${noti.data.diasRestantes} dias`);
-    }
-    if (noti.data?.fechaCaducidad) {
-      const fecha = formatDateColombia(noti.data.fechaCaducidad);
-      detalles.push(`Fecha de vencimiento: ${fecha}`);
-    }
-    return detalles;
-  }
-  return [];
-};
-
 export default function NotificacionesPanel({ open, onClose }: Props) {
   const { idUsuario } = useAuth();
   const { notificaciones, isLoading, marcarLeida, refetch } =
@@ -76,7 +54,6 @@ export default function NotificacionesPanel({ open, onClose }: Props) {
 
         {notificaciones?.map((noti) => {
           const badge = getTipoBadge(noti.titulo);
-          const elementoDetails = getElementoDetails(noti);
           
           return (
             <div
@@ -108,17 +85,6 @@ export default function NotificacionesPanel({ open, onClose }: Props) {
               <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">
                 {noti.mensaje}
               </p>
-              
-              {/* Mostrar detalles del elemento */}
-              {elementoDetails.length > 0 && (
-                <div className="mt-3 p-2 bg-gray-50 dark:bg-zinc-700 rounded-lg">
-                  {elementoDetails.map((detail, idx) => (
-                    <p key={idx} className="text-sm text-gray-600 dark:text-gray-300">
-                      {detail}
-                    </p>
-                  ))}
-                </div>
-              )}
               
               <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-100 dark:border-zinc-600">
                 <p className="text-xs text-gray-400">

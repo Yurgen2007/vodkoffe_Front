@@ -1,16 +1,15 @@
 import { z } from "zod";
 
 export const ModuloSchema = z.object({
-  idModulo: z.number(),
+  idModulo: z.number().optional(),
   nombre: z
     .string()
     .min(1, { message: "Es necesario un nombre" })
-    .min(3, "Mínimo 3 caracteres"),
-  estado: z.boolean({ required_error: "Estado es requerido" }),
-  descripcion: z
-    .string()
-    .min(1, { message: "Es necesario una descripcion" })
-    .min(3, "Mínimo 3 caracteres"),
+    .min(1, "Mínimo 1 caracter"),
+  descripcion: z.string().optional(),
+  href: z.string().optional(),
+  icono: z.string({ required_error: "Icono es requerido" }).min(1, "Icono es requerido"),
+  estado: z.boolean().optional(),
 });
 
 export type Modulo = z.infer<typeof ModuloSchema>;
@@ -20,11 +19,11 @@ export const ModuloUpdateSchema = z.object({
   nombre: z
     .string()
     .min(1, { message: "Es necesario un nombre" })
-    .min(3, "Mínimo 3 caracteres"),
-  descripcion: z
-    .string()
-    .min(1, { message: "Es necesario una descripcion" })
-    .min(3, "Mínimo 3 caracteres"),
+    .min(1, "Mínimo 1 caracter"),
+  descripcion: z.string().optional(),
+  href: z.string().optional(),
+  icono: z.string().optional(),
+  estado: z.boolean().optional(),
 });
 
 export type ModuloUpdate = z.infer<typeof ModuloUpdateSchema>;

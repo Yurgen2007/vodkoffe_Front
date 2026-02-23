@@ -32,7 +32,7 @@ export const CodigoInventario = ({
       const disponibles = getCodigosPorElemento(
         idElemento,
         codigosAll ?? [],
-      ).filter((c) => !c.uso);
+      ).filter((c) => c.uso !== true);
 
       setCodigos(disponibles);
     } catch (error) {

@@ -1,9 +1,8 @@
 import { Form } from "@heroui/form";
 import { addToast, Input, Select, SelectItem } from "@heroui/react";
 import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 
-import { RolCreate, RolCreateSchema } from "@/schemas/Rol";
+import { RolCreate } from "@/types/Rol";
 
 type FormularioProps = {
   addData: (rol: RolCreate) => Promise<any>;
@@ -22,7 +21,6 @@ export default function FormularioRoles({
     handleSubmit,
     formState: { errors },
   } = useForm<RolCreate>({
-    resolver: zodResolver(RolCreateSchema),
     mode: "onChange",
     defaultValues: {
       estado: true,
@@ -31,7 +29,7 @@ export default function FormularioRoles({
 
   const onSubmit = async (data: RolCreate) => {
     try {
-      console.log("DAtos enviados:", data);
+      console.log("Datos enviados:", data);
       await addData(data);
       onClose();
       addToast({
@@ -46,8 +44,6 @@ export default function FormularioRoles({
     }
   };
 
-  console.log("Errores", errors);
-
   return (
     <Form
       className="w-full space-y-4"
@@ -58,7 +54,7 @@ export default function FormularioRoles({
         label="Nombre"
         placeholder="Nombre"
         type="text"
-        {...register("nombre")}
+        {...register("nombre", { required: "El nombre es requerido" })}
         errorMessage={errors.nombre?.message}
         isInvalid={!!errors.nombre}
       />
@@ -68,14 +64,12 @@ export default function FormularioRoles({
         render={({ field }) => (
           <Select
             label="Estado"
-            placeholder="Selecciona estado"
-            {...field}
-            isDisabled
-            defaultSelectedKeys={["true"]}
-            errorMessage={errors.estado?.message}
-            isInvalid={!!errors.estado}
-            value={field.value ? "true" : "false"}
-            onChange={(e) => field.onChange(e.target.value === "true")}
+            placeholder="Seleccione un estado"
+            selectedKeys={[field.value ? "true" : "false"]}
+            onSelectionChange={(keys) => {
+              const selected = Array.from(keys)[0];
+              field.onChange(selected === "true");
+            }}
           >
             <SelectItem key="true">Activo</SelectItem>
             <SelectItem key="false">Inactivo</SelectItem>

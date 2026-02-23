@@ -1,8 +1,8 @@
 import { axiosAPI } from "../axiosAPI";
 
-import { Unidad } from "@/types/Unidad";
+import { UnidadMedida } from "@/types/UnidadMedida";
 
-export const getUnidad = async (): Promise<Unidad[]> => {
+export const getUnidad = async (): Promise<UnidadMedida[]> => {
   const res = await axiosAPI.get(`unidades-medida`);
 
   return res.data;

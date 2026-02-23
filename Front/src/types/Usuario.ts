@@ -9,11 +9,17 @@ export type User = {
   estado?: boolean;
   cargo?: string;
   password?: string;
-  fkRol?: number;
+  fkRol?: number | {
+    idRol?: number;
+    nombre?: string;
+  };
   // Campos de configuracion de correo
   serviceMail?: string;
   mailUser?: string;
   mailPassword?: string;
+  perfil?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type Perfil = {
@@ -38,7 +44,7 @@ export type UpPerfil = {
 };
 
 export type postUser = {
-  documento?: number;
+  documento: number;
   nombre: string;
   apellido: string;
   edad: number;
@@ -59,6 +65,7 @@ export type putUser = {
   correo: string | null;
   cargo?: string;
   fkRol?: number;
+  estado?: boolean;
   // Campos de configuracion de correo
   serviceMail?: string;
   mailUser?: string;

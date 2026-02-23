@@ -7,9 +7,10 @@ import { AxiosError } from "axios";
 import Buton from "@/components/molecules/Button";
 import { useInventario } from "@/hooks/Inventarios/useInventario";
 import { InventarioUpdate, InventarioUpdateSchema } from "@/schemas/Inventario";
+import { Inventario } from "@/types/Inventario";
 
 type FormuProps = {
-  inventarios: InventarioUpdate[];
+  inventarios: Inventario[];
   inventarioId: number;
   id: string;
   onclose: () => void;
@@ -51,7 +52,12 @@ export const FormUpdate = ({
     console.log("Enviando datos:", data);
     if (!data.idInventario) return;
     try {
-      await updateInventario(data.idInventario, data);
+      const inventarioData: Inventario = {
+        idInventario: data.idInventario,
+        nombre: data.nombre,
+        estado: data.estado ?? true,
+      };
+      await updateInventario(data.idInventario, inventarioData);
       onclose();
       addToast({
         title: "Actualizacion Exitosa",
@@ -66,7 +72,7 @@ export const FormUpdate = ({
         err?.response?.data?.message || "Ocurrió un error inesperado";
 
       addToast({
-        title: "Debes activar el elemento para poder agregar stock",
+        title: "Error al actualizar el inventario",
         description: backendMessage,
         color: "danger",
         timeout: 3000,

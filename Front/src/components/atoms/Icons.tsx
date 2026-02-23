@@ -5,6 +5,7 @@ export const FormatrackLogo = () => {
       height={36}
       src="\src\assets\login.png"
       width={36}
+      className="dark:brightness-0 dark:invert"
     />
   );
 };

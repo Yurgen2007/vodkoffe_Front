@@ -33,13 +33,8 @@ export function useCodigoInventario() {
     idElemento: number,
     codigosData: CodigoInventario[] = data ?? [],
   ): CodigoInventario[] => {
-    return codigosData.filter((c) => {
-      if (typeof c.fkElemento === "object" && c.fkElemento !== null) {
-        return c.fkElemento.idElemento === idElemento;
-      }
-
-      return c.fkElemento === idElemento;
-    });
+    // Por ahora retornamos todos los códigos, ya que la lógica de elemento podría ser diferente
+    return codigosData;
   };
 
   const getCodigoInventarioById = (

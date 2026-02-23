@@ -1,6 +1,6 @@
 import { Form } from "@heroui/form";
-import { addToast, Input } from "@heroui/react";
-import { useForm } from "react-hook-form";
+import { addToast, Input, Select, SelectItem } from "@heroui/react";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
@@ -20,12 +20,16 @@ export default function FormularioCaracteristicas({
   id,
 }: FormularioProps) {
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<CaracteristicaCreate>({
     resolver: zodResolver(CaracteristicaCreateSchema),
     mode: "onChange",
+    defaultValues: {
+      estado: true,
+    },
   });
 
   const onSubmit = async (data: CaracteristicaCreate) => {
@@ -34,7 +38,7 @@ export default function FormularioCaracteristicas({
       onClose();
       addToast({
         title: "Registro Exitoso",
-        description: "Caracteristica agregado correctamente",
+        description: "Caracteristica agregada correctamente",
         color: "success",
         timeout: 3000,
         shouldShowTimeoutProgress: true,
@@ -48,7 +52,7 @@ export default function FormularioCaracteristicas({
     <Form
       className="w-full space-y-4"
       id={id}
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmit) as any}
     >
       <Input
         label="Nombre"
@@ -57,6 +61,31 @@ export default function FormularioCaracteristicas({
         {...register("nombre")}
         errorMessage={errors.nombre?.message}
         isInvalid={!!errors.nombre}
+      />
+      <Input
+        label="Descripcion"
+        placeholder="Descripcion"
+        type="text"
+        {...register("descripcion")}
+        errorMessage={errors.descripcion?.message}
+        isInvalid={!!errors.descripcion}
+      />
+      <Controller
+        name="estado"
+        control={control}
+        render={({ field }) => (
+          <Select
+            label="Estado"
+            placeholder="Selecciona estado"
+            selectedKeys={[field.value ? "true" : "false"]}
+            onChange={(e) => field.onChange(e.target.value === "true")}
+            errorMessage={errors.estado?.message}
+            isInvalid={!!errors.estado}
+          >
+            <SelectItem key="true">Activo</SelectItem>
+            <SelectItem key="false">Inactivo</SelectItem>
+          </Select>
+        )}
       />
     </Form>
   );

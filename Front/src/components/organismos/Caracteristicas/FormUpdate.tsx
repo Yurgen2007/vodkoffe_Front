@@ -1,7 +1,8 @@
 import { Form } from "@heroui/form";
 import { Input } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { addToast } from "@heroui/react";
 
 import Buton from "@/components/molecules/Button";
@@ -10,9 +11,10 @@ import {
   CaracteristicaUpdateSchema,
 } from "@/schemas/Caracteristica";
 import { useCaracteristica } from "@/hooks/Caracteristicas/useCaracteristicas";
+import { Caracteristica } from "@/types/Caracteristica";
 
 type Props = {
-  caracteristicas: CaracteristicaUpdate[];
+  caracteristicas: Caracteristica[];
   caracteristicaId: number;
   id: string;
   onclose: () => void;
@@ -29,9 +31,10 @@ export const FormUpdate = ({
   const foundCaracteristica = getCaracteristicaById(
     caracteristicaId,
     caracteristicas,
-  ) as CaracteristicaUpdate;
+  );
 
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
@@ -39,8 +42,10 @@ export const FormUpdate = ({
     resolver: zodResolver(CaracteristicaUpdateSchema),
     mode: "onChange",
     defaultValues: {
-      idCaracteristica: foundCaracteristica.idCaracteristica,
-      nombre: foundCaracteristica.nombre,
+      idCaracteristica: foundCaracteristica?.idCaracteristica,
+      nombre: foundCaracteristica?.nombre || "",
+      descripcion: foundCaracteristica?.descripcion || "",
+      estado: foundCaracteristica?.estado ?? true,
     },
   });
 
@@ -48,7 +53,11 @@ export const FormUpdate = ({
     console.log(data);
     if (!data.idCaracteristica) return;
     try {
-      await updateCaracteristica(data.idCaracteristica, data);
+      await updateCaracteristica(data.idCaracteristica, {
+        nombre: data.nombre || "",
+        descripcion: data.descripcion,
+        estado: data.estado,
+      });
       onclose();
       addToast({
         title: "Actualizacion Exitosa",
@@ -76,6 +85,30 @@ export const FormUpdate = ({
         {...register("nombre")}
         errorMessage={errors.nombre?.message}
         isInvalid={!!errors.nombre}
+      />
+      <Input
+        label="Descripcion"
+        placeholder="Descripcion"
+        {...register("descripcion")}
+        errorMessage={errors.descripcion?.message}
+        isInvalid={!!errors.descripcion}
+      />
+      <Controller
+        name="estado"
+        control={control}
+        render={({ field }) => (
+          <Select
+            label="Estado"
+            placeholder="Selecciona estado"
+            selectedKeys={[field.value ? "true" : "false"]}
+            onChange={(e: any) => field.onChange(e.target.value === "true")}
+            errorMessage={errors.estado?.message}
+            isInvalid={!!errors.estado}
+          >
+            <SelectItem key="true">Activo</SelectItem>
+            <SelectItem key="false">Inactivo</SelectItem>
+          </Select>
+        )}
       />
 
       <Buton

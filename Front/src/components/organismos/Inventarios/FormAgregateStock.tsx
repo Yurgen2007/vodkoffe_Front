@@ -7,19 +7,17 @@ import Buton from "@/components/molecules/Button";
 
 type Props = {
   fkInventario?: number;
-  fkElemento: number;
   fkSitio: number;
   estado?: boolean;
   onClose: () => void;
 };
 
 export const FormAgregateStock = ({
-  fkElemento,
   fkSitio,
   estado,
   onClose,
 }: Props) => {
-  console.log("🚀 Se montó <FormAgregateStock />", { fkElemento, fkSitio });
+  console.log("🚀 Se montó <FormAgregateStock />", { fkSitio });
   const [codigos, setCodigos] = useState<string[]>([]);
   const [nuevoCodigo, setNuevoCodigo] = useState("");
   const { agregarStockInventario } = useInventario();
@@ -32,7 +30,7 @@ export const FormAgregateStock = ({
 
   const guardar = async () => {
     try {
-      await agregarStockInventario({ fkElemento, fkSitio, codigos });
+      await agregarStockInventario({ fkSitio, codigos });
       addToast({
         title: "Éxito",
         description: `${codigos.length} códigos agregados correctamente`,
@@ -61,7 +59,7 @@ export const FormAgregateStock = ({
         addToast({
           title: "Error",
           description:
-            "No se pudo agregar el stock uno de los codigos ya se encuentran registrados o  debe activar el elemento del inventario",
+            "No se pudo agregar el stock, uno de los códigos ya se encuentra registrado",
           color: "danger",
         });
         onClose();

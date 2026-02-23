@@ -2,6 +2,7 @@ import { axiosAPI } from "../axiosAPI";
 
 export interface UnidadPutData {
   nombre: string;
+  estado?: boolean;
 }
 
 export async function putUnidad(

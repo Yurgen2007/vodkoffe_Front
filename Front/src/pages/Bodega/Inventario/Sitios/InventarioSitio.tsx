@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 
-import { InventariosTable } from "@/pages/Bodega/Inventario/Tablas/Inventarios";
+import { GestionInventarios } from "@/components/organismos/Inventarios/GestionInventarios";
 import { useSitios } from "@/hooks/sitios/useSitios";
 import Buton from "@/components/molecules/Button";
 
@@ -30,7 +30,7 @@ export const InventarioSitio = () => {
       <h1 className="text-2xl font-bold text-center mb-4">
         Inventario del sitio {sitio.nombre}
       </h1>
-      <InventariosTable idSitio={idSitios} />
+      <GestionInventarios />
     </div>
   );
 };

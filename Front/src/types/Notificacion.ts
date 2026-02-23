@@ -8,7 +8,6 @@ export type Notificacion = {
   requiereAccion: boolean;
   estado: NotificacionEstado;
   data: {
-    idElemento?: number;
     [key: string]: any;
   } | null;
   createdAt: string;

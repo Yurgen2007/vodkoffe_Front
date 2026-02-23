@@ -29,7 +29,7 @@ export interface TableColumn<T> {
   render?: (item: T) => JSX.Element;
 }
 
-interface TableProps<T extends { key: string; estado?: boolean }> {
+interface TableProps<T extends { key: string; estado?: boolean | string }> {
   data: T[];
   columns: TableColumn<T>[];
   onEdit?: (item: T) => void | boolean;
@@ -41,7 +41,7 @@ interface TableProps<T extends { key: string; estado?: boolean }> {
   extraHeaderContent?: React.ReactNode;
 }
 
-const Globaltable = <T extends { key: string; estado?: boolean }>({
+const Globaltable = <T extends { key: string; estado?: boolean | string }>({
   data,
   columns,
   onEdit,

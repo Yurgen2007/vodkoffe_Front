@@ -1,9 +1,7 @@
-import { useElemento } from "@/hooks/Elementos/useElemento";
 import { useInventario } from "@/hooks/Inventarios/useInventario";
 import { InventarioDashboard } from "@/components/organismos/Inventarios/InventarioDashboard";
 
 const Dashboard = () => {
-  const { elementos = [] } = useElemento();
   const { inventarios = [] } = useInventario();
 
   return (

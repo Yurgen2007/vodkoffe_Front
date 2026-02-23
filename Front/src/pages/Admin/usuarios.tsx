@@ -9,7 +9,7 @@ import Modall from "@/components/organismos/modal";
 import FormRegister from "@/components/organismos/Usuarios/FormRegister";
 import { FormUpdate } from "@/components/organismos/Usuarios/Formupdate";
 import { useUsuario } from "@/hooks/Usuarios/useUsuario";
-import { User } from "@/types/Usuario";
+import { User, postUser } from "@/types/Usuario";
 
 import usePermissions from "@/hooks/Usuarios/usePermissions";
 
@@ -43,7 +43,20 @@ const UsersTable = () => {
 
   const handleAddUser = async (user: User) => {
     try {
-      await addUser(user);
+      // Convertir User a postUser
+      const userData: postUser = {
+        documento: user.documento || 0,
+        nombre: user.nombre,
+        apellido: user.apellido,
+        edad: user.edad,
+        telefono: user.telefono,
+        correo: user.correo,
+        estado: user.estado,
+        cargo: user.cargo,
+        password: user.password,
+        fkRol: typeof user.fkRol === 'number' ? user.fkRol : user.fkRol?.idRol,
+      };
+      await addUser(userData);
       handleClose();
     } catch (error) {
       console.error("Error al agregar el usuario:", error);
@@ -83,6 +96,8 @@ const UsersTable = () => {
       ...user,
       key: user.idUsuario ? user.idUsuario.toString() : crypto.randomUUID(),
       estado: Boolean(user.estado),
+      // Convertir fkRol a número si es un objeto
+      fkRol: typeof user.fkRol === 'number' ? user.fkRol : user.fkRol?.idRol || undefined,
     }));
 
   return (

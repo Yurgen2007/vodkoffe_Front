@@ -30,8 +30,12 @@ export default function useLogin() {
       const token = response.access_token;
       const permissions = response.modules;
 
-      cookies.set("token", token);
-      cookies.set("permissions", permissions);
+      console.log("📦 Datos recibidos del backend:", response);
+      console.log("📦 Permissions del backend:", permissions);
+
+      cookies.set("token", token, { path: "/" });
+      // Guardar permisos como string JSON para asegurar que se guarden correctamente
+      cookies.set("permissions", JSON.stringify(permissions), { path: "/" });
       //Auth
       const { idUsuario }: { idUsuario: number } = jwtDecode(token);
 

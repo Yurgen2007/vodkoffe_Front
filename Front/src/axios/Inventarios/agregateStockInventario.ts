@@ -2,7 +2,6 @@ import { axiosAPI } from "../axiosAPI";
 
 export type AgregateStockData = {
   idInventario?: number;
-  fkElemento?: number;
   fkSitio?: number;
   codigos?: string[];
 };

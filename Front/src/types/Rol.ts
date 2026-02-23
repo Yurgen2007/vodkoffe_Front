@@ -6,3 +6,9 @@ export type Rol = {
   updatedAt?: string;
   asignarPermisos?: string;
 };
+
+export type RolCreate = {
+  nombre: string;
+  estado: boolean;
+  idRol?: number;
+};

@@ -1,15 +1,15 @@
 import { Form } from "@heroui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Input } from "@heroui/input";
-import { addToast } from "@heroui/react";
+import { addToast, Select, SelectItem } from "@heroui/react";
+import { useEffect } from "react";
 
 import { useUnidad } from "@/hooks/UnidadesMedida/useUnidad";
-import { UnidadUpdate, UnidadUpdateSchema } from "@/schemas/Unidad";
+import { UnidadMedida } from "@/types/UnidadMedida";
 import Buton from "@/components/molecules/Button";
 
 type Props = {
-  unidades: (UnidadUpdate & { idUnidad?: number })[];
+  unidades: UnidadMedida[];
   unidadId: number;
   id: string;
   onclose: () => void;
@@ -18,26 +18,39 @@ type Props = {
 export const FormUpdate = ({ unidades, unidadId, id, onclose }: Props) => {
   const { updateUnidad, getUnidadById } = useUnidad();
 
-  const foundUnidad = getUnidadById(unidadId, unidades) as UnidadUpdate;
+  const foundUnidad = getUnidadById(unidadId, unidades);
 
   const {
     register,
     handleSubmit,
+    control,
+    reset,
     formState: { errors, isSubmitting },
-  } = useForm<UnidadUpdate>({
-    resolver: zodResolver(UnidadUpdateSchema),
+  } = useForm<UnidadMedida>({
     mode: "onChange",
     defaultValues: {
-      idUnidad: foundUnidad.idUnidad ?? 0,
-      nombre: foundUnidad.nombre,
+      idUnidad: foundUnidad?.idUnidad ?? 0,
+      nombre: foundUnidad?.nombre,
+      estado: foundUnidad?.estado ?? true,
     },
   });
 
-  const onSubmit = async (data: UnidadUpdate) => {
+  // Actualizar el formulario cuando cambia la unidad seleccionada
+  useEffect(() => {
+    if (foundUnidad) {
+      reset({
+        idUnidad: foundUnidad.idUnidad,
+        nombre: foundUnidad.nombre,
+        estado: foundUnidad.estado,
+      });
+    }
+  }, [foundUnidad, reset]);
+
+  const onSubmit = async (data: UnidadMedida) => {
     console.log(data);
-    if (!data.idUnidad) return;
+    if (!unidadId) return;
     try {
-      await updateUnidad(data.idUnidad, data);
+      await updateUnidad(unidadId, data);
       onclose();
       addToast({
         title: "Actualizacion Exitosa",
@@ -51,27 +64,37 @@ export const FormUpdate = ({ unidades, unidadId, id, onclose }: Props) => {
     }
   };
 
-  console.log("Errores", errors);
-
   return (
-    <Form
-      className="w-full space-y-4"
-      id={id}
-      onSubmit={handleSubmit(onSubmit)}
-    >
+    <Form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Input
         label="Nombre"
         placeholder="Nombre"
-        {...register("nombre")}
+        type="text"
+        {...register("nombre", { required: "El nombre es requerido" })}
         errorMessage={errors.nombre?.message}
         isInvalid={!!errors.nombre}
       />
-      <Buton
-        className="w-full  rounded-xl"
-        isLoading={isSubmitting}
-        text="Guardar"
-        type="submit"
+      <Controller
+        control={control}
+        name="estado"
+        render={({ field }) => (
+          <Select
+            label="Estado"
+            placeholder="Seleccione un estado"
+            selectedKeys={[field.value ? "true" : "false"]}
+            onSelectionChange={(keys) => {
+              const selected = Array.from(keys)[0];
+              field.onChange(selected === "true");
+            }}
+          >
+            <SelectItem key="true">Activo</SelectItem>
+            <SelectItem key="false">Inactivo</SelectItem>
+          </Select>
+        )}
       />
+      <Buton type="submit" isLoading={isSubmitting}>
+        Actualizar
+      </Buton>
     </Form>
   );
 };
