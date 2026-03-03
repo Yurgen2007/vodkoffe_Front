@@ -108,7 +108,11 @@ export const IngresosEgresosPage = () => {
             C: estado,
             D: costoLote,
             E: mov.nombreCliente || '-',
-            F: mov.fechaMovimiento ? new Date(mov.fechaMovimiento).toLocaleDateString('es-CO') : '-',
+            F: mov.fechaMovimiento ? (() => {
+              const fechaStr = mov.fechaMovimiento;
+              const fecha = new Date(fechaStr + 'T00:00:00');
+              return isNaN(fecha.getTime()) ? '-' : fecha.toLocaleDateString('es-CO');
+            })() : '-',
             G: mov.tipo,
             H: cantidad,
             I: ingreso,

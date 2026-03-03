@@ -14,7 +14,7 @@ import usePermissions from "@/hooks/Usuarios/usePermissions";
 
 export const UnidadTable = () => {
   const { userHasPermission } = usePermissions();
-  const { unidades, isLoading, isError, error, addUnidad, changeState } =
+  const { unidades, isLoading, isError, error, addUnidad, changeState, deleteReal } =
     useUnidad();
 
   //Modal agregar
@@ -31,8 +31,8 @@ export const UnidadTable = () => {
   };
 
   const handleDelete = async (idUnidad: number) => {
-    if (confirm("¿Está seguro de desactivar esta unidad de medida?")) {
-      await changeState(idUnidad);
+    if (confirm("¿Está seguro de eliminar esta unidad de medida?")) {
+      await deleteReal(idUnidad);
     }
   };
 
@@ -179,7 +179,7 @@ export const UnidadTable = () => {
             }
             onDelete={userHasPermission(21) ? (unidad) => handleDelete(unidad.idUnidad) : undefined}
             onEdit={userHasPermission(20) ? handleEdit : undefined}
-            useDeleteInsteadOfChangeState={false}
+            useDeleteInsteadOfChangeState={true}
           />
         ) : (
           <div className="text-center py-8 text-gray-500">

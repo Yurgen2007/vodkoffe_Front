@@ -167,15 +167,23 @@ export const MovimientosPage = () => {
     {
       key: 'fechaMovimiento',
       label: 'Fecha',
-      render: (movimiento: MovimientoWithKey) => (
-        <span>
-          {new Date(movimiento.fechaMovimiento).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-          })}
-        </span>
-      ),
+      render: (movimiento: MovimientoWithKey) => {
+        // Parsear la fecha correctamente evitando problemas de zona horaria
+        const fechaStr = movimiento.fechaMovimiento;
+        // Crear fecha en hora local (sin UTC)
+        const fecha = new Date(fechaStr + 'T00:00:00');
+        return (
+          <span>
+            {isNaN(fecha.getTime())
+              ? 'Fecha inválida'
+              : fecha.toLocaleDateString('es-ES', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                })}
+          </span>
+        );
+      },
     },
   ];
 
