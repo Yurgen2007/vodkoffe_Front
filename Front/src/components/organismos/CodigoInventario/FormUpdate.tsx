@@ -65,7 +65,7 @@ export const FormUpdate = ({ codigos, codigoId, id, onClose }: Props) => {
       <Input
         label="Código"
         placeholder="Nuevo código"
-        {...register("codigo")}
+        {...register("codigo", { required: "El código es requerido" })}
         errorMessage={errors.codigo?.message}
         isInvalid={!!errors.codigo}
       />

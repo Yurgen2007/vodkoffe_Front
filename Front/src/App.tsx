@@ -1,7 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 
 import Layout from "./layouts/layout";
-import Home from "./pages/Home/Home";
 import { Inventario } from "./pages/Bodega/Inventarios";
 import Login from "./pages/Login";
 import UsersTable from "./pages/Admin/usuarios";
@@ -15,38 +14,41 @@ import Perfil from "./pages/Perfil";
 import { AccesoPage } from "./pages/Admin/Acceso";
 import LotesPage from "./pages/Bodega/Lotes";
 import UnidadesPage from "./pages/Bodega/Unidades";
-import MovimientosPage from "./pages/Bodega/Movimientos";
+import { MovimientosPage } from "./pages/Bodega/Movimientos";
 import MateriasPrimasPage from "./pages/Bodega/MateriasPrimas";
-
+import { IngresosEgresosPage } from "./pages/Bodega/IngresosEgresos";
 
 function App() {
   return (
     <Routes>
       <Route element={<ProtectedRoute />}>
-        <Route element={<Layout />} path="/">
-          <Route index element={<Home />} />
-          <Route element={<Perfil />} path="perfil" />
-          <Route element={<UsersTable />} path="admin/usuarios" />
-          <Route element={<RolTable />} path="admin/roles" />
-          <Route element={<AccesoPage />} path="admin/acceso" />
-          <Route element={<UnidadTable />} path="bodega/unidades-medida" />
-          <Route element={<LotesPage />} path="bodega/lotes" />
-          <Route element={<UnidadesPage />} path="bodega/unidades" />
-          <Route element={<MovimientosPage />} path="bodega/movimientos" />
-          <Route element={<MateriasPrimasPage />} path="bodega/materias-primas" />
-          <Route
-            element={<CaracteristicasTable />}
-            path="bodega/caracteristicas"
-          />
+        <Route element={<Layout />}>
+          
+          {/* Ruta principal */}
+          <Route index element={<MovimientosPage />} />
 
-          <Route element={<Inventario />} path="bodega/inventario/" />
+          <Route path="perfil" element={<Perfil />} />
+          <Route path="admin/usuarios" element={<UsersTable />} />
+          <Route path="admin/roles" element={<RolTable />} />
+          <Route path="admin/acceso" element={<AccesoPage />} />
+          <Route path="admin/ingresos-egresos" element={<IngresosEgresosPage />} />
+          <Route path="admin/ingresos" element={<MovimientosPage />} />
+          <Route path="admin/egresos" element={<MovimientosPage />} />
+
+          <Route path="bodega/unidades-medida" element={<UnidadTable />} />
+          <Route path="bodega/lotes" element={<LotesPage />} />
+          <Route path="bodega/unidades" element={<UnidadesPage />} />
+          <Route path="bodega/materias-primas" element={<MateriasPrimasPage />} />
+          <Route path="bodega/caracteristicas" element={<CaracteristicasTable />} />
+          <Route path="bodega/inventario" element={<Inventario />} />
+
         </Route>
       </Route>
 
-      <Route element={<Login />} path="/login" />
-      <Route element={<ForgotPassword />} path="/forgotPass" />
-      <Route element={<ResetPassword />} path="/reset-password" />
-      <Route element={<Perfil />} path="/perfil" />
+      <Route path="/login" element={<Login />} />
+      <Route path="/forgotPass" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/perfil" element={<Perfil />} />
     </Routes>
   );
 }

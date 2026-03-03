@@ -6,7 +6,7 @@ export const UnidadMedidaCreateSchema = z.object({
     .min(1, { message: "El nombre es requerido" })
     .min(2, { message: "Debe contener como mínimo 2 caracteres" })
     .max(70, { message: "No puede exceder 70 caracteres" }),
-  estado: z.boolean().default(true),
+  estado: z.boolean(),
 });
 
 export type UnidadMedidaCreate = z.infer<typeof UnidadMedidaCreateSchema>;

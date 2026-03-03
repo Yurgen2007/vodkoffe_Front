@@ -1,3 +1,4 @@
+import { addToast } from '@heroui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   getMateriasPrimas, 
@@ -13,6 +14,10 @@ export const useMateriasPrimas = () => {
   return useQuery({
     queryKey: ['materiasPrimas'],
     queryFn: getMateriasPrimas,
+    staleTime: 0,
+    gcTime: 1000 * 60 * 5,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -30,7 +35,22 @@ export const useCreateMateriaPrima = () => {
   return useMutation({
     mutationFn: (data: MateriaPrimaCreate) => postMateriaPrima(data),
     onSuccess: () => {
+      addToast({
+        title: 'Materia prima creada correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({ queryKey: ['materiasPrimas'] });
+    },
+    onError: (error) => {
+      addToast({
+        title: 'Error al crear materia prima',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 };
@@ -40,9 +60,24 @@ export const useUpdateMateriaPrima = () => {
   
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: MateriaPrimaUpdate }) => putMateriaPrima(id, data),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
+      addToast({
+        title: 'Materia prima actualizada correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({ queryKey: ['materiasPrimas'] });
-      queryClient.invalidateQueries({ queryKey: ['materiasPrimas', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['lotes'] });
+    },
+    onError: (error) => {
+      addToast({
+        title: 'Error al actualizar materia prima',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 };
@@ -53,7 +88,22 @@ export const useDeleteMateriaPrima = () => {
   return useMutation({
     mutationFn: (id: number) => deleteMateriaPrima(id),
     onSuccess: () => {
+      addToast({
+        title: 'Materia prima eliminada correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({ queryKey: ['materiasPrimas'] });
+    },
+    onError: (error) => {
+      addToast({
+        title: 'Error al eliminar materia prima',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 };
@@ -64,7 +114,22 @@ export const useChangeStatusMateriaPrima = () => {
   return useMutation({
     mutationFn: (id: number) => changeStatusMateriaPrima(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materiasPrimas'] });
+      addToast({
+        title: 'Estado actualizado correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
+      queryClient.refetchQueries({ queryKey: ['materiasPrimas'] });
+    },
+    onError: (error) => {
+      addToast({
+        title: 'Error al cambiar estado',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 };

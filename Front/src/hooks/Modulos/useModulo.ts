@@ -24,7 +24,6 @@ export function useModulo() {
       });
     },
     onError: (error) => {
-      console.log("Error al cargar el modulo", error);
     },
   });
 

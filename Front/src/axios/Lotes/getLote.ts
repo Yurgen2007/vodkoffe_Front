@@ -52,3 +52,18 @@ export const postRegistrarMultiplesUnidadesLote = async (loteId: number, cantida
   const response = await api.post(`/unidades/lote/${loteId}/registrar-multiple`, { unidades });
   return response.data;
 };
+
+// Crear materias primas y asociarlas a un lote existente
+export const postMateriasPrimasConLote = async (data: {
+  materiasPrimas: {
+    nombre: string;
+    descripcion?: string;
+    cantidad: number;
+    costoUnitario: number;
+    fkUnidadMedida?: number;
+  }[];
+  fkLote: number;
+}) => {
+  const response = await api.post('/lotes/materias-primas', data);
+  return response.data;
+};

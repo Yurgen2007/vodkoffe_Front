@@ -1,8 +1,10 @@
 import { Form } from "@heroui/form";
-import { addToast, Input, Select, SelectItem } from "@heroui/react";
+import { addToast, Input, Select, SelectItem, Button } from "@heroui/react";
 import { useForm } from "react-hook-form";
+import { useEffect, useMemo } from "react";
 
 import { MovimientoCreate } from "@/types/Movimiento";
+import { useLotes } from "@/hooks/Lotes/useLotes";
 
 type FormularioProps = {
   addData: (data: MovimientoCreate) => Promise<void>;
@@ -17,35 +19,101 @@ export default function FormularioMovimientos({
   id,
   initialData,
 }: FormularioProps) {
+  const { data: lotes } = useLotes();
+  
+  // Memoizar el lote inicial para evitar problemas de renderizado
+  const loteInicialId = useMemo(() => {
+    return initialData?.fkLote || 0;
+  }, [initialData?.fkLote]);
+
   const {
-    register,
     handleSubmit,
     watch,
+    setValue,
+    reset,
     formState: { errors },
   } = useForm<MovimientoCreate>({
     mode: "onChange",
-    defaultValues: initialData || {
+    defaultValues: initialData ? {
+      tipo: initialData.tipo || "VENTA",
+      cantidadVendida: initialData.cantidadVendida ?? 0,
+      cantidadDegustacion: initialData.cantidadDegustacion ?? 0,
+      cantidadAlianza: initialData.cantidadAlianza ?? 0,
+      cantidadInventario: initialData.cantidadInventario ?? 0,
+      precioUnitario: initialData.precioUnitario ?? 0,
+      descripcion: initialData.descripcion || "",
+      nombreCliente: initialData.nombreCliente || "",
+      fkLote: initialData.fkLote ?? 0,
+    } : {
       tipo: "VENTA",
       cantidadVendida: 0,
       cantidadDegustacion: 0,
       cantidadAlianza: 0,
-      cantidadOtro: 0,
       cantidadInventario: 0,
       precioUnitario: 0,
       descripcion: "",
-      fechaMovimiento: new Date().toISOString().split("T")[0],
+      nombreCliente: "",
       fkLote: 0,
     },
   });
 
-  const tipoSeleccionado = watch("tipo");
+  const fkLoteValue = watch("fkLote");
+  const cantidadVendida = watch("cantidadVendida");
+  const cantidadDegustacion = watch("cantidadDegustacion");
+  const cantidadAlianza = watch("cantidadAlianza");
+
+  // Usar el valor actual del formulario o el inicial
+  const loteId = fkLoteValue || loteInicialId || 0;
+  
+  // Encontrar el lote seleccionado para obtener el precio unitario
+  const loteSeleccionado = lotes?.find((l: any) => l.idLote === loteId);
+  
+  // Usar el precio del lote o el precio del initialData
+  const precioUnitarioLote = loteSeleccionado?.costoUnitario || initialData?.precioUnitario || 0;
+
+  // Actualizar precio unitario cuando cambia el lote o los datos iniciales
+  useEffect(() => {
+    if (loteSeleccionado?.costoUnitario) {
+      setValue('precioUnitario', loteSeleccionado.costoUnitario);
+    }
+  }, [loteSeleccionado, setValue]);
+
+  // Resetear el formulario cuando initialData cambia (para modo edición)
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        tipo: initialData.tipo || 'VENTA',
+        cantidadVendida: initialData.cantidadVendida ?? 0,
+        cantidadDegustacion: initialData.cantidadDegustacion ?? 0,
+        cantidadAlianza: initialData.cantidadAlianza ?? 0,
+        cantidadInventario: initialData.cantidadInventario ?? 0,
+        precioUnitario: initialData.precioUnitario ?? 0,
+        descripcion: initialData.descripcion || '',
+        nombreCliente: initialData.nombreCliente || '',
+        fkLote: initialData.fkLote ?? 0,
+      });
+    }
+  }, [initialData, reset]);
+
+  // Calcular precio total automáticamente (solo para ventas)
+  const calcularPrecioTotal = () => {
+    const cantidadTotal = (cantidadVendida || 0) + (cantidadDegustacion || 0) + (cantidadAlianza || 0);
+    return cantidadTotal * precioUnitarioLote;
+  };
+
+  const precioTotalCalculado = calcularPrecioTotal();
 
   const onSubmit = async (data: MovimientoCreate) => {
     try {
-      await addData(data);
+      const dataConPrecio = {
+        ...data,
+        tipo: data.tipo || 'VENTA',
+        precioUnitario: precioUnitarioLote,
+      };
+      await addData(dataConPrecio);
       onClose();
       addToast({
-        title: "Registro Exitoso",
+        title: "Registro exitoso",
         description: "Movimiento agregado correctamente",
         color: "success",
         timeout: 3000,
@@ -53,8 +121,21 @@ export default function FormularioMovimientos({
       });
     } catch (error) {
       console.error("Error al guardar:", error);
+      addToast({
+        title: "Error",
+        description: "No se pudo registrar el movimiento",
+        color: "danger",
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     }
   };
+
+  // Determinar si es modo edición
+  const isEditing = !!initialData;
+
+  // Keys seleccionadas para el Select de lote
+  const selectedKeys = loteInicialId ? [String(loteInicialId)] : [];
 
   return (
     <Form
@@ -62,194 +143,131 @@ export default function FormularioMovimientos({
       id={id}
       onSubmit={handleSubmit(onSubmit)}
     >
-      <Select
-        label="Tipo de Movimiento"
-        {...register("tipo", { required: "El tipo es requerido" })}
-        selectedKeys={[initialData?.tipo || "VENTA"]}
-        errorMessage={errors.tipo?.message}
-        isInvalid={!!errors.tipo}
-      >
-        <SelectItem key="VENTA">Venta</SelectItem>
-        <SelectItem key="NO_VENTA">No Venta</SelectItem>
-        <SelectItem key="INVENTARIO">Inventario</SelectItem>
-      </Select>
-
-      {tipoSeleccionado === "NO_VENTA" && (
-        <Select
-          label="Tipo de No Venta"
-          {...register("tipoNoVenta")}
-          selectedKeys={initialData?.tipoNoVenta ? [initialData.tipoNoVenta] : []}
-          errorMessage={errors.tipoNoVenta?.message}
-          isInvalid={!!errors.tipoNoVenta}
-        >
-          <SelectItem key="DEGUSTACION">Degustación</SelectItem>
-          <SelectItem key="ALIANZA">Alianza</SelectItem>
-          <SelectItem key="OTRO">Otro</SelectItem>
-        </Select>
-      )}
-
-      {tipoSeleccionado === "INVENTARIO" && (
-        <Select
-          label="Tipo de Inventario"
-          {...register("tipoInventario", { required: "El tipo de inventario es requerido" })}
-          selectedKeys={initialData?.tipoInventario ? [initialData.tipoInventario] : []}
-          errorMessage={errors.tipoInventario?.message}
-          isInvalid={!!errors.tipoInventario}
-        >
-          <SelectItem key="entrada">Entrada</SelectItem>
-          <SelectItem key="salida">Salida</SelectItem>
-          <SelectItem key="ajuste">Ajuste</SelectItem>
-        </Select>
-      )}
-
-      {/* Campos para VENTA */}
-      {tipoSeleccionado === "VENTA" && (
+      {/* Si está editando, solo mostrar campos editables */}
+      {isEditing ? (
         <>
           <Input
-            label="Cantidad Vendida"
-            placeholder="Ingrese la cantidad"
-            type="number"
-            {...register("cantidadVendida", { 
-              required: "La cantidad es requerida",
-              valueAsNumber: true,
-              min: { value: 0, message: "La cantidad debe ser mayor o igual a 0" }
-            })}
-            errorMessage={errors.cantidadVendida?.message}
-            isInvalid={!!errors.cantidadVendida}
+            label="Nombre Cliente"
+            placeholder="Nombre del cliente al que se le vende"
+            type="text"
+            defaultValue={initialData?.nombreCliente || ''}
+            onChange={(e) => setValue('nombreCliente', e.target.value)}
           />
 
           <Input
-            label="Precio Unitario"
-            placeholder="Ingrese el precio unitario"
-            type="number"
-            step="0.01"
-            {...register("precioUnitario", { 
-              required: "El precio es requerido",
-              valueAsNumber: true,
-              min: { value: 0, message: "El precio debe ser mayor o igual a 0" }
-            })}
-            errorMessage={errors.precioUnitario?.message}
-            isInvalid={!!errors.precioUnitario}
+            label="Descripción"
+            placeholder="Descripción del movimiento"
+            type="text"
+            defaultValue={initialData?.descripcion || ''}
+            onChange={(e) => setValue('descripcion', e.target.value)}
           />
         </>
-      )}
-
-      {/* Campos para NO_VENTA */}
-      {tipoSeleccionado === "NO_VENTA" && (
+      ) : (
         <>
-          <Input
-            label="Cantidad Degustación"
-            placeholder="Cantidad para degustación"
-            type="number"
-            {...register("cantidadDegustacion", { 
-              valueAsNumber: true,
-              min: { value: 0, message: "La cantidad debe ser mayor o igual a 0" }
-            })}
-            errorMessage={errors.cantidadDegustacion?.message}
-            isInvalid={!!errors.cantidadDegustacion}
-          />
+          {/* Campos para nuevo movimiento */}
+          {/* Campo lote */}
+          <Select
+            label="Lote"
+            defaultSelectedKeys={selectedKeys}
+            selectedKeys={selectedKeys}
+            onSelectionChange={(keys) => {
+              const selected = Array.from(keys)[0];
+              if (selected) {
+                setValue("fkLote", Number(selected));
+              }
+            }}
+          >
+            {(lotes || []).map((lote: any) => (
+              <SelectItem key={String(lote.idLote)}>
+                {lote.codigoLote} ({lote.unidades?.filter((u: any) => u.estado === 'DISPONIBLE').length || 0} disponibles)
+              </SelectItem>
+            ))}
+          </Select>
 
-          <Input
-            label="Cantidad Alianza"
-            placeholder="Cantidad para alianza"
-            type="number"
-            {...register("cantidadAlianza", { 
-              valueAsNumber: true,
-              min: { value: 0, message: "La cantidad debe ser mayor o igual a 0" }
-            })}
-            errorMessage={errors.cantidadAlianza?.message}
-            isInvalid={!!errors.cantidadAlianza}
-          />
-
-          <Input
-            label="Cantidad Otro"
-            placeholder="Cantidad otro tipo"
-            type="number"
-            {...register("cantidadOtro", { 
-              valueAsNumber: true,
-              min: { value: 0, message: "La cantidad debe ser mayor o igual a 0" }
-            })}
-            errorMessage={errors.cantidadOtro?.message}
-            isInvalid={!!errors.cantidadOtro}
-          />
-        </>
-      )}
-
-      {/* Campos para INVENTARIO */}
-      {tipoSeleccionado === "INVENTARIO" && (
-        <>
-          <Input
-            label="Cantidad"
-            placeholder="Cantidad para inventario"
-            type="number"
-            {...register("cantidadInventario", { 
-              required: "La cantidad es requerida",
-              valueAsNumber: true,
-              min: { value: 1, message: "La cantidad debe ser mayor a 0" }
-            })}
-            errorMessage={errors.cantidadInventario?.message}
-            isInvalid={!!errors.cantidadInventario}
-          />
-
-          <Input
-            label="ID Unidad"
-            placeholder="Ingrese el ID de la unidad"
-            type="number"
-            {...register("fkUnidad", { 
-              required: "El ID de unidad es requerido",
-              valueAsNumber: true,
-              min: { value: 1, message: "El ID debe ser mayor a 0" }
-            })}
-            errorMessage={errors.fkUnidad?.message}
-            isInvalid={!!errors.fkUnidad}
-          />
-        </>
-      )}
-
-      {/* Campo fecha - siempre visible */}
-      <Input
-        label="Fecha Movimiento"
-        type="date"
-        {...register("fechaMovimiento", { required: "La fecha es requerida" })}
-        errorMessage={errors.fechaMovimiento?.message}
-        isInvalid={!!errors.fechaMovimiento}
-      />
-
-      {/* Campo lote - visible para VENTA y NO_VENTA */}
-      {(tipoSeleccionado === "VENTA" || tipoSeleccionado === "NO_VENTA") && (
-        <>
-          <Input
-            label="ID Lote"
-            placeholder="Ingrese el ID del lote"
-            type="number"
-            {...register("fkLote", { 
-              required: "El ID del lote es requerido",
-              valueAsNumber: true,
-              min: { value: 1, message: "El ID debe ser mayor a 0" }
-            })}
-            errorMessage={errors.fkLote?.message}
-            isInvalid={!!errors.fkLote}
-          />
+          {/* Campo tipo de movimiento - solo VENTA para este formulario */}
+          <Select
+            label="Tipo de Movimiento"
+            defaultSelectedKeys={['VENTA']}
+            isDisabled
+          >
+            <SelectItem key="VENTA">Venta</SelectItem>
+          </Select>
 
           <Input
             label="Nombre Cliente"
             placeholder="Nombre del cliente al que se le vende"
             type="text"
-            {...register("nombreCliente")}
-            errorMessage={errors.nombreCliente?.message}
-            isInvalid={!!errors.nombreCliente}
+            onChange={(e) => setValue('nombreCliente', e.target.value)}
+          />
+
+          {/* Campo cantidadVendida */}
+          <Input
+            label="Cantidad Vendida"
+            placeholder="Cantidad vendida"
+            type="number"
+            onChange={(e) => setValue('cantidadVendida', Number(e.target.value) || 0)}
+          />
+
+          {/* Campo cantidadDegustacion */}
+          <Input
+            label="Cantidad Degustación"
+            placeholder="Cantidad para degustación"
+            type="number"
+            onChange={(e) => setValue('cantidadDegustacion', Number(e.target.value) || 0)}
+          />
+
+          {/* Campo cantidadAlianza */}
+          <Input
+            label="Cantidad Alianza"
+            placeholder="Cantidad para alianza"
+            type="number"
+            onChange={(e) => setValue('cantidadAlianza', Number(e.target.value) || 0)}
+          />
+
+          {/* Precio unitario del lote (solo lectura) */}
+          <Input
+            label="Precio Unitario"
+            placeholder="Precio del lote"
+            type="number"
+            value={precioUnitarioLote}
+            isReadOnly
+            variant="bordered"
+          />
+
+          {/* Precio total calculado automáticamente */}
+          <Input
+            label="Precio Total"
+            placeholder="Total a cobrar"
+            type="number"
+            value={String(precioTotalCalculado)}
+            isReadOnly
+            variant="bordered"
+          />
+
+          {/* La fecha del movimiento se genera automáticamente en el servidor */}
+          <Input
+            label="Fecha Movimiento"
+            type="text"
+            value={new Date().toLocaleDateString('es-ES')}
+            isReadOnly
+            variant="bordered"
+          />
+
+          <Input
+            label="Descripción"
+            placeholder="Descripción del movimiento"
+            type="text"
+            onChange={(e) => setValue('descripcion', e.target.value)}
           />
         </>
       )}
 
-      <Input
-        label="Descripción"
-        placeholder="Descripción del movimiento"
-        type="text"
-        {...register("descripcion")}
-        errorMessage={errors.descripcion?.message}
-        isInvalid={!!errors.descripcion}
-      />
+      {/* Botón de guardar */}
+      <div className="flex justify-end gap-2 pt-4 w-full">
+        <Button color="primary" type="submit" className="w-full">
+          Guardar
+        </Button>
+      </div>
     </Form>
   );
 }

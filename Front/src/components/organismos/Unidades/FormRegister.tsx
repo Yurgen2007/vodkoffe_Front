@@ -9,6 +9,7 @@ import { useInventario } from "@/hooks/Inventarios/useInventario";
 import { useCaracteristica } from "@/hooks/Caracteristicas/useCaracteristicas";
 import { useUnidad } from "@/hooks/UnidadesMedida/useUnidad";
 import { UnidadCreate, UnidadCreateSchema } from "@/schemas/Unidad";
+import { verificarCodigoUnidad } from "@/axios/Unidades/getUnidad";
 
 interface FormRegisterUnidadesProps {
   addData: (data: any) => Promise<void>;
@@ -51,7 +52,18 @@ export default function FormRegisterUnidades({
   const onSubmit = async (data: UnidadCreate) => {
     try {
       // Convertir el campo de código a array (soportar múltiples códigos)
-      const codigosRaw = data.codigoUnidad.trim();
+      const codigosRaw = (data.codigoUnidad || '').trim();
+      
+      // Si no hay código, generar uno automáticamente
+      if (!codigosRaw) {
+        addToast({
+          title: "Código requerido",
+          description: "Por favor ingrese al menos un código de unidad",
+          color: "warning",
+        });
+        return;
+      }
+      
       // Separar por comas, saltos de línea o guiones
       const codigos = codigosRaw
         .split(/[,\n\-]/)
@@ -59,6 +71,28 @@ export default function FormRegisterUnidades({
         .filter(c => c !== '');
 
       console.log('Códigos parseados:', codigos);
+
+      // Verificar si los códigos ya existen antes de enviar
+      const codigosDuplicados: string[] = [];
+      for (const codigo of codigos) {
+        try {
+          const result = await verificarCodigoUnidad(codigo);
+          if (result.existe) {
+            codigosDuplicados.push(codigo);
+          }
+        } catch (error) {
+          console.error('Error verificando código:', codigo, error);
+        }
+      }
+
+      if (codigosDuplicados.length > 0) {
+        addToast({
+          title: "Códigos duplicados",
+          description: `Los siguientes códigos ya están registrados: ${codigosDuplicados.join(', ')}. Por favor use códigos diferentes.`,
+          color: "warning",
+        });
+        return; // Detener el registro
+      }
 
       // Determinar si es modo múltiple
       const esMultiple = modoMultiple || codigos.length > 1;
@@ -81,9 +115,9 @@ export default function FormRegisterUnidades({
           color: "success",
         });
       } else {
-        // Modo单个 (un solo código)
+        // Modo单个 (un solo código) - usar el código ya validado
         const payload: UnidadCreate = {
-          codigoUnidad: data.codigoUnidad.trim(),
+          codigoUnidad: codigosRaw,
           fkLote: data.fkLote ? Number(data.fkLote) : undefined,
           fkInventario: data.fkInventario ? Number(data.fkInventario) : undefined,
           fkCaracteristica: data.fkCaracteristica ? Number(data.fkCaracteristica) : undefined,
@@ -101,11 +135,13 @@ export default function FormRegisterUnidades({
 
       onClose();
       reset();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      // Mostrar mensaje de error específico del backend
+      const errorMessage = err.response?.data?.message || "No se pudo guardar la unidad";
       addToast({
         title: "Error",
-        description: "No se pudo guardar la unidad",
+        description: errorMessage,
         color: "danger",
       });
     }

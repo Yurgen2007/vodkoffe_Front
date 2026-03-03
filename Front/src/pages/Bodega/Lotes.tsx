@@ -9,6 +9,7 @@ import { Lote, LoteCreate } from '@/types/Lote';
 import Modall from '@/components/organismos/modal';
 import FormularioLotes from '@/components/organismos/Lotes/FormRegister';
 import usePermissions from '@/hooks/Usuarios/usePermissions';
+import { formatNumber } from '@/utils/formatNumber';
 
 export const LotesPage = () => {
   const { userHasPermission } = usePermissions();
@@ -61,9 +62,17 @@ export const LotesPage = () => {
     { 
       key: 'cantidadUnidades', 
       label: 'Unidades',
-      render: (lote: LoteWithKey) => (
-        <span className="font-bold text-blue-600">{lote.unidades?.length || 0}/12</span>
-      )
+      render: (lote: LoteWithKey) => {
+        // Mostrar: unidades registradas / máximo permitido (12)
+        const registradas = lote.cantidadUnidades || 0;
+        const maximo = 12; // MAX_UNIDADES_POR_LOTE
+        
+        return (
+          <span className="font-bold text-blue-600">
+            {registradas}/{maximo}
+          </span>
+        );
+      }
     },
     {
       key: 'fechaProduccion',
@@ -92,17 +101,36 @@ export const LotesPage = () => {
       label: 'Costo Unit.',
       render: (lote: LoteWithKey) => {
         const costo = Number(lote.costoUnitario) || 0;
-        return <span>${costo.toFixed(2)}</span>;
+        return <span>${formatNumber(costo)}</span>;
       }
     },
     {
       key: 'estado',
       label: 'Estado',
-      render: (lote: LoteWithKey) => (
-        <span className={lote.estado ? 'text-green-600' : 'text-red-600'}>
-          {lote.estado ? 'Activo' : 'Inactivo'}
-        </span>
-      ),
+      render: (lote: LoteWithKey) => {
+        // Determinar el estado del lote
+        const unidadesDisponibles = lote.unidades?.filter((u: any) => u.estado === 'DISPONIBLE').length || 0;
+        const totalUnidades = lote.unidades?.length || 0;
+        
+        if (!lote.estado) {
+          return (
+            <span className="text-red-600 font-bold">
+              Vendido
+            </span>
+          );
+        } else if (unidadesDisponibles === 0 && totalUnidades > 0) {
+          return (
+            <span className="text-orange-600 font-bold">
+              Agotado
+            </span>
+          );
+        }
+        return (
+          <span className="text-green-600">
+            Activo
+          </span>
+        );
+      },
     },
   ];
 
@@ -156,8 +184,8 @@ export const LotesPage = () => {
             onClose={handleCloseUpdate}
             initialData={{
               codigoLote: selectedLote.codigoLote,
-              fechaProduccion: selectedLote.fechaProduccion,
-              fechaVencimiento: selectedLote.fechaVencimiento || '',
+              fechaProduccion: selectedLote.fechaProduccion ? new Date(selectedLote.fechaProduccion).toISOString().split('T')[0] : '',
+              fechaVencimiento: selectedLote.fechaVencimiento ? new Date(selectedLote.fechaVencimiento).toISOString().split('T')[0] : '',
               costoUnitario: selectedLote.costoUnitario,
             }}
           />
@@ -176,7 +204,7 @@ export const LotesPage = () => {
             columns={columns}
             data={lotesWithKey}
             onEdit={userHasPermission(79) ? handleEdit : undefined}
-            onDelete={userHasPermission(80) ? handleDelete : undefined}
+            onDelete={undefined}
             useDeleteInsteadOfChangeState={true}
             extraHeaderContent={
               <div className="flex gap-2">

@@ -25,13 +25,8 @@ export default function useLogin() {
     try {
       const response = await postLogin(data);
 
-      console.log(response);
-
       const token = response.access_token;
       const permissions = response.modules;
-
-      console.log("📦 Datos recibidos del backend:", response);
-      console.log("📦 Permissions del backend:", permissions);
 
       cookies.set("token", token, { path: "/" });
       // Guardar permisos como string JSON para asegurar que se guarden correctamente
@@ -57,7 +52,6 @@ export default function useLogin() {
     } catch (error: any) {
       const errorMessage = error.message;
 
-      console.log(errorMessage);
       setIsError(true);
       setError(errorMessage);
     } finally {
@@ -70,7 +64,7 @@ export default function useLogin() {
       cookies.remove("token");
       navigate("/login");
     } catch (error) {
-      console.log(error);
+      // Error en logout
     }
   }
 

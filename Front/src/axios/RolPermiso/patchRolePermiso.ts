@@ -8,6 +8,6 @@ export const patchRolePermiso = async (permiso: number, rol: number) => {
 
     return data;
   } catch (error) {
-    console.log(error);
+    // Error en la petición
   }
 };

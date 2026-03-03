@@ -124,7 +124,7 @@ export const GestionInventarios = () => {
       <Card>
         <CardBody>
           <div className="overflow-x-auto">
-            <Table className="w-full">
+            <Table className="w-full" aria-label="Tabla de inventarios">
               <TableHeader className="text-center">
                 <TableColumn className="text-center">ID</TableColumn>
                 <TableColumn className="text-center">NOMBRE</TableColumn>

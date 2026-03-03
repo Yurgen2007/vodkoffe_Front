@@ -80,7 +80,7 @@ export default function FormularioU({ addData, onClose, id }: FormularioProps) {
           label="Documento"
           placeholder="Documento"
           type="text"
-          {...register("documento", { valueAsNumber: true })}
+          {...register("documento", { required: "El documento es requerido", valueAsNumber: true })}
           errorMessage={errors.documento?.message}
           isInvalid={!!errors.documento}
         />
@@ -88,7 +88,7 @@ export default function FormularioU({ addData, onClose, id }: FormularioProps) {
           label="Nombre"
           placeholder="Nombre"
           type="text"
-          {...register("nombre")}
+          {...register("nombre", { required: "El nombre es requerido" })}
           errorMessage={errors.nombre?.message}
           isInvalid={!!errors.nombre}
         />
@@ -96,7 +96,7 @@ export default function FormularioU({ addData, onClose, id }: FormularioProps) {
           label="Apellido"
           placeholder="Apellido"
           type="text"
-          {...register("apellido")}
+          {...register("apellido", { required: "El apellido es requerido" })}
           errorMessage={errors.apellido?.message}
           isInvalid={!!errors.apellido}
         />
@@ -112,7 +112,7 @@ export default function FormularioU({ addData, onClose, id }: FormularioProps) {
           label="Telefono"
           placeholder="Telefono"
           type="text"
-          {...register("telefono")}
+          {...register("telefono", { required: "El teléfono es requerido" })}
           errorMessage={errors.telefono?.message}
           isInvalid={!!errors.telefono}
         />
@@ -120,7 +120,7 @@ export default function FormularioU({ addData, onClose, id }: FormularioProps) {
           label="Correo"
           placeholder="Correo"
           type="email"
-          {...register("correo")}
+          {...register("correo", { required: "El correo es requerido" })}
           errorMessage={errors.correo?.message}
           isInvalid={!!errors.correo}
         />
@@ -153,7 +153,7 @@ export default function FormularioU({ addData, onClose, id }: FormularioProps) {
           label="Cargo"
           placeholder="Cargo"
           type="text"
-          {...register("cargo")}
+          {...register("cargo", { required: "El cargo es requerido" })}
           errorMessage={errors.cargo?.message}
           isInvalid={!!errors.cargo}
         />
@@ -161,7 +161,7 @@ export default function FormularioU({ addData, onClose, id }: FormularioProps) {
           label="Contrasena"
           placeholder="Password"
           type="password"
-          {...register("password")}
+          {...register("password", { required: "La contraseña es requerida" })}
           autoComplete="off"
           errorMessage={errors.password?.message}
           isInvalid={!!errors.password}

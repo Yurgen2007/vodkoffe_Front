@@ -24,7 +24,6 @@ export function usePermisos() {
       });
     },
     onError: (error) => {
-      console.log("Error al cargar el permiso", error);
     },
   });
 

@@ -10,9 +10,7 @@ export default function usePassword() {
 
   async function forgotPassword(data: forgotPass) {
     try {
-      const response = await postForgotPassword(data);
-
-      console.log(response);
+      await postForgotPassword(data);
     } catch (error) {
       console.error("No se pudo enviar el email", error);
       setIsError(true);
@@ -23,9 +21,7 @@ export default function usePassword() {
 
   async function resetPassword(token: string, data: resetPass) {
     try {
-      const response = await postResetPassword(token, data);
-
-      console.log(response);
+      await postResetPassword(token, data);
     } catch (error) {
       console.error("No se pudo restablecer la contraseña", error);
       setIsError(true);

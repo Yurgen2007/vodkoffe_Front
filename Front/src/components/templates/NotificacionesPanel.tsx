@@ -20,6 +20,9 @@ const getTipoBadge = (titulo: string) => {
   if (t.includes('caducar') || t.includes('caducidad')) {
     return { color: 'bg-yellow-100 text-yellow-800', icon: '🗓️', label: 'Por Caducar' };
   }
+  if (t.includes('vencer') || t.includes('lote')) {
+    return { color: 'bg-orange-100 text-orange-800', icon: '⏰', label: 'Lote por Vencer' };
+  }
   if (t.includes('movimiento')) {
     return { color: 'bg-blue-100 text-blue-800', icon: '📦', label: 'Movimiento' };
   }

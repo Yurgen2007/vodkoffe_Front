@@ -98,14 +98,14 @@ export const FormUpdate = ({ Users, userId, id, onclose }: FormuProps) => {
         <Input
           label="Nombre"
           placeholder="Nombre"
-          {...register("nombre")}
+          {...register("nombre", { required: "El nombre es requerido" })}
           errorMessage={errors.nombre?.message}
           isInvalid={!!errors.nombre}
         />
         <Input
           label="Apellido"
           placeholder="Apellido"
-          {...register("apellido")}
+          {...register("apellido", { required: "El apellido es requerido" })}
           errorMessage={errors.apellido?.message}
           isInvalid={!!errors.apellido}
         />
@@ -120,7 +120,7 @@ export const FormUpdate = ({ Users, userId, id, onclose }: FormuProps) => {
         <Input
           label="Telefono"
           placeholder="Telefono"
-          {...register("telefono")}
+          {...register("telefono", { required: "El teléfono es requerido" })}
           errorMessage={errors.telefono?.message}
           isInvalid={!!errors.telefono}
         />
@@ -128,14 +128,14 @@ export const FormUpdate = ({ Users, userId, id, onclose }: FormuProps) => {
           label="Correo"
           placeholder="Correo"
           type="email"
-          {...register("correo")}
+          {...register("correo", { required: "El correo es requerido" })}
           errorMessage={errors.correo?.message}
           isInvalid={!!errors.correo}
         />
         <Input
           label="Cargo"
           placeholder="Cargo"
-          {...register("cargo")}
+          {...register("cargo", { required: "El cargo es requerido" })}
           errorMessage={errors.cargo?.message}
           isInvalid={!!errors.cargo}
         />

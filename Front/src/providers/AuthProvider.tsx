@@ -33,11 +33,12 @@ const filterSubmodules = (modulo: any) => {
   let filteredRutas = modulo.rutas;
   
   if (moduloNombre === 'admin') {
-    // Solo mostrar Usuarios, Roles y Acceso en Admin
+    // Mostrar: Usuarios, Roles, Acceso, Ingresos/Egresos
     const allowedSubmodules = [
       'usuarios',
       'roles',
-      'acceso'
+      'acceso',
+      'ingresos/egresos'
     ];
     filteredRutas = modulo.rutas.filter((ruta: any) => 
       allowedSubmodules.includes(ruta.nombre?.toLowerCase())

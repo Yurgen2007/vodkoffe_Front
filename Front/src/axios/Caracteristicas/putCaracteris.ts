@@ -7,7 +7,7 @@ export async function updateCategoria(
   data: Caracteristica,
 ): Promise<any> {
   const response = await axiosAPI.patch(
-    `caracteristicas/update/${idCaracteristica}`,
+    `caracteristicas/${idCaracteristica}`,
     data,
   );
 

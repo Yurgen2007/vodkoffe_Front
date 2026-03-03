@@ -1,6 +1,7 @@
 import { Form } from "@heroui/form";
 import { addToast, Input } from "@heroui/react";
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 
 import { LoteCreate } from "@/types/Lote";
 
@@ -21,6 +22,7 @@ export default function FormularioLotes({
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<LoteCreate>({
     mode: "onChange",
     defaultValues: initialData || {
@@ -30,6 +32,13 @@ export default function FormularioLotes({
       costoUnitario: 0,
     },
   });
+
+  // Resetear el formulario cuando initialData cambia
+  useEffect(() => {
+    if (initialData) {
+      reset(initialData);
+    }
+  }, [initialData, reset]);
 
   const onSubmit = async (data: LoteCreate) => {
     try {

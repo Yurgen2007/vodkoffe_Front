@@ -16,7 +16,6 @@ export function usePerfil() {
 
         setPerfilInfo(perfil);
       } catch (error) {
-        console.log(error);
         setError(
           error instanceof Error ? error : new Error("Error desconocido"),
         );

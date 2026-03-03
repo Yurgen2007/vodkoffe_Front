@@ -27,7 +27,6 @@ export function useUsuario() {
     },
 
     onError: (error) => {
-      console.log("Error al cargar el usuario", error);
     },
   });
 

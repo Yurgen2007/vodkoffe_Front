@@ -27,7 +27,6 @@ export function useRol() {
       });
     },
     onError: (error) => {
-      console.log("Error al cargar el rol", error);
     },
   });
 

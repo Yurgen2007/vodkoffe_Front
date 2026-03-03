@@ -58,7 +58,7 @@ export default function FormularioCaracteristicas({
         label="Nombre"
         placeholder="Nombre"
         type="text"
-        {...register("nombre")}
+        {...register("nombre", { required: "El nombre es requerido" })}
         errorMessage={errors.nombre?.message}
         isInvalid={!!errors.nombre}
       />

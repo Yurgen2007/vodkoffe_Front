@@ -12,14 +12,14 @@ export const EstadoUnidadSchema = z.enum([
 export type EstadoUnidad = z.infer<typeof EstadoUnidadSchema>;
 
 // Esquema para crear una unidad
-// Los campos fkLote, fkInventario, fkCaracteristica pueden ser string o number
-// ya que los Select de HeroUI trabajan con strings
+// El código es opcional porque el backend puede generarlo automáticamente
 const UnidadCreateBaseSchema = z.object({
   codigoUnidad: z
     .string()
-    .min(1, { message: "El código de unidad es requerido" })
     .min(2, { message: "Debe contener como mínimo 2 caracteres" })
-    .max(100, { message: "No puede exceder 100 caracteres" }),
+    .max(100, { message: "No puede exceder 100 caracteres" })
+    .optional()
+    .or(z.literal("")),
   fkLote: z.union([z.string(), z.number()]).optional(),
   fkInventario: z.union([z.string(), z.number()]).optional(),
   fkCaracteristica: z.union([z.string(), z.number()]).optional(),

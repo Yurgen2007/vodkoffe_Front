@@ -2,6 +2,8 @@ export type Lote = {
   idLote: number;
   codigoLote: string;
   cantidadUnidades: number;
+  cantidadActual?: number;  // Cantidad de unidades disponibles
+  cantidadTotal?: number;   // Cantidad total de unidades en el lote
   fechaProduccion: string;
   fechaVencimiento: string;
   costoUnitario: number;
@@ -17,6 +19,7 @@ export type Lote = {
 
 export type LoteCreate = {
   codigoLote: string;
+  cantidadUnidades?: number;  // Opcional para actualizaciones
   fechaProduccion: string;
   fechaVencimiento?: string;
   costoUnitario: number;

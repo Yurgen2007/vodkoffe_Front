@@ -4,7 +4,7 @@ export const FormatrackLogo = () => {
       alt="FarmaMedica Logo"
       height={36}
       src="\src\assets\login.png"
-      width={36}
+      width={86}
       className="dark:brightness-0 dark:invert"
     />
   );

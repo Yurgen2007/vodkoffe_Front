@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 
 import { Notificacion } from "@/types/Notificacion";
@@ -10,11 +10,14 @@ export function useSocketNotificaciones(
   onNotificacion: (noti: Notificacion) => void,
 ) {
   const socketRef = useRef<Socket | null>(null);
+  
+  // Memoizar el callback para evitar reconexiones
+  const handleNotificacion = useCallback((noti: Notificacion) => {
+    onNotificacion(noti);
+  }, [onNotificacion]);
 
   useEffect(() => {
     if (!usuarioId || usuarioId <= 0) {
-      console.warn("⚠️ ID de usuario no válido para el socket:", usuarioId);
-
       return;
     }
 
@@ -30,8 +33,8 @@ export function useSocketNotificaciones(
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      console.log("✅ Conectado al socket:", socket.id);
       socket.emit("join", `usuario_${usuarioId}`);
+      console.log("✅ Socket conectado:", socket.id);
     });
 
     socket.on("connect_error", (err) => {
@@ -43,15 +46,13 @@ export function useSocketNotificaciones(
     });
 
     socket.on("nuevaNotificacion", (noti: Notificacion) => {
-      console.log("📥 Notificación recibida:", noti);
-      onNotificacion(noti);
+      handleNotificacion(noti);
     });
 
     return () => {
-      console.log("🔌 Desmontando y cerrando socket...");
       socket.disconnect();
     };
-  }, [usuarioId, onNotificacion]);
+  }, [usuarioId, handleNotificacion]);
 
   return socketRef;
 }

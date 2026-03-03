@@ -1,3 +1,4 @@
+import { addToast } from '@heroui/react';
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getCaracteristicas } from "@/axios/Caracteristicas/getCaracteris";
@@ -19,12 +20,24 @@ export function useCaracteristica() {
   const addCaracteristicaMutation = useMutation({
     mutationFn: postCaracteristica,
     onSuccess: () => {
+      addToast({
+        title: 'Característica creada correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({
         queryKey: ["caracteristicas"],
       });
     },
     onError: (error) => {
-      console.log("Error al cargar la caracteristica", error);
+      addToast({
+        title: 'Error al crear característica',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 
@@ -46,13 +59,25 @@ export function useCaracteristica() {
       return updateCategoria(id, resto);
     },
     onSuccess: () => {
+      addToast({
+        title: 'Característica actualizada correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({
         queryKey: ["caracteristicas"],
       });
     },
 
     onError: (error) => {
-      console.error("Error al actualizar:", error);
+      addToast({
+        title: 'Error al actualizar característica',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 
@@ -67,12 +92,24 @@ export function useCaracteristica() {
   const deleteCaracteristicaMutation = useMutation({
     mutationFn: deleteCaracteristica,
     onSuccess: () => {
+      addToast({
+        title: 'Característica eliminada correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({
         queryKey: ["caracteristicas"],
       });
     },
     onError: (error) => {
-      console.error("Error al eliminar:", error);
+      addToast({
+        title: 'Error al eliminar característica',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 

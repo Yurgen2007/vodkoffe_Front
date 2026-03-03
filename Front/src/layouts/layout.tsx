@@ -9,11 +9,13 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useSocketNotificaciones } from "@/hooks/Notificaciones/useSocketNotificaciones";
 import { useNotificaciones } from "@/hooks/Notificaciones/useNotificaciones";
 import usePermissions from "@/hooks/Usuarios/usePermissions";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Layout() {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const { idUsuario } = useAuth();
   const { userHasPermission } = usePermissions();
+  const queryClient = useQueryClient();
 
   const { notificaciones } = useNotificaciones(idUsuario!);
   const cantidadNoLeidas = notificaciones?.filter((n) => !n.leido).length ?? 0;
@@ -27,18 +29,23 @@ export default function Layout() {
     }
   }, [idUsuario]);
 
-  useSocketNotificaciones(idUsuario!, (noti) => {
+  // Callback para manejar nuevas notificaciones en tiempo real
+  const handleNuevaNotificacion = (noti: any) => {
     console.log("🔔 Nueva notificación:", noti);
-  });
+    // Invalidar la query para refetch y actualizar la lista
+    queryClient.invalidateQueries({ queryKey: ["notificaciones", idUsuario] });
+  };
+
+  useSocketNotificaciones(idUsuario!, handleNuevaNotificacion);
 
   if (!idUsuario) {
     return <div className="text-center mt-10">🔄 Cargando usuario...</div>;
   }
 
   return (
-    <div className="flex h-screen overflow-hidden dark:bg-zinc-900 text-black dark:text-white">
+    <div className="flex h-screen overflow-hidden bg-bg-primary text-text-primary">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto bg-gray-200 dark:bg-zinc-900 text-black dark:text-white">
+      <main className="flex-1 overflow-y-auto bg-bg-primary text-text-primary">
         <Nav
           cantidadNoLeidas={cantidadNoLeidas}
           onOpenNotifications={() => setIsNotifOpen(true)}

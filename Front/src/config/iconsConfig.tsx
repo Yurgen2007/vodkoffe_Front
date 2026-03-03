@@ -1,6 +1,8 @@
 import {
   ArchiveBoxIcon,
   ArrowsRightLeftIcon,
+  BanknotesIcon,
+  BeakerIcon,
   BuildingOfficeIcon,
   ClipboardDocumentCheckIcon,
   ClipboardDocumentListIcon,
@@ -8,6 +10,8 @@ import {
   EnvelopeIcon,
   GlobeAmericasIcon,
   HomeIcon,
+  RectangleStackIcon,
+  Squares2X2Icon,
   TagIcon,
   UserIcon,
   TruckIcon,
@@ -26,6 +30,10 @@ const iconsConfig: Record<string, React.ElementType> = {
   CubeIcon,
   HomeIcon,
   TruckIcon,
+  BanknotesIcon,
+  RectangleStackIcon,
+  Squares2X2Icon,
+  BeakerIcon,
 };
 
 export default iconsConfig;

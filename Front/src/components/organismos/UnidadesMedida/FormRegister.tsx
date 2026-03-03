@@ -26,13 +26,16 @@ export default function FormularioUnidadesMedida({
     resolver: zodResolver(UnidadMedidaCreateSchema),
     defaultValues: {
       nombre: "",
-      estado: true,
+      estado: true as boolean,
     },
   });
 
-  const onSubmit = async (data: UnidadMedidaCreate) => {
+  const onSubmit = async (data: any) => {
     try {
-      await addData(data);
+      await addData({
+        nombre: data.nombre,
+        estado: data.estado,
+      });
       onClose();
       addToast({
         title: "Registro Exitoso",

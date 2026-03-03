@@ -33,7 +33,7 @@ export const postMovimiento = async (data: MovimientoCreate): Promise<Movimiento
 };
 
 export const putMovimiento = async (id: number, data: Partial<MovimientoCreate>): Promise<Movimiento> => {
-  const response = await api.put(`/movimientos/${id}`, data);
+  const response = await api.patch(`/movimientos/${id}`, data);
   return response.data;
 };
 

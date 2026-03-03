@@ -93,7 +93,7 @@ export const FormUpdate = ({
       <Input
         label="Nombre"
         placeholder="Ingrese el nombre ..."
-        {...register("nombre")}
+        {...register("nombre", { required: "El nombre es requerido" })}
         errorMessage={errors.nombre?.message}
         isInvalid={!!errors.nombre}
       />

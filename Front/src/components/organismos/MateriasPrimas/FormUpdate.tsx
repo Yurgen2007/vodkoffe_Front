@@ -5,6 +5,7 @@ import { useEffect } from "react";
 
 import Buton from "@/components/molecules/Button";
 import { useUnidad } from "@/hooks/UnidadesMedida/useUnidad";
+import { useUpdateMateriaPrima } from "@/hooks/MateriasPrimas/useMateriaPrima";
 import { MateriaPrima, MateriaPrimaUpdate } from "@/types/MateriaPrima";
 
 type Props = {
@@ -21,10 +22,16 @@ export const FormUpdate = ({
   onclose,
 }: Props) => {
   const { unidades: unidadesMedida } = useUnidad();
+  const updateMateriaPrima = useUpdateMateriaPrima();
 
   const foundMateriaPrima = materiasPrimas.find(
     (mp) => mp.idMateriaPrima === materiaPrimaId,
   );
+
+  // Obtener el fkUnidadMedida directo
+  const getUnidadMedidaId = (): number | undefined => {
+    return foundMateriaPrima?.fkUnidadMedida ?? undefined;
+  };
 
   const {
     register,
@@ -38,7 +45,7 @@ export const FormUpdate = ({
       nombre: foundMateriaPrima?.nombre || "",
       descripcion: foundMateriaPrima?.descripcion || "",
       costoUnitario: foundMateriaPrima?.costoUnitario || 0,
-      fkUnidadMedida: foundMateriaPrima?.fkUnidadMedida ?? undefined,
+      fkUnidadMedida: getUnidadMedidaId(),
     },
   });
 
@@ -48,27 +55,31 @@ export const FormUpdate = ({
         nombre: foundMateriaPrima.nombre || "",
         descripcion: foundMateriaPrima.descripcion || "",
         costoUnitario: foundMateriaPrima.costoUnitario || 0,
-        fkUnidadMedida: foundMateriaPrima.fkUnidadMedida ?? undefined,
+        fkUnidadMedida: getUnidadMedidaId(),
       });
     }
   }, [foundMateriaPrima, reset]);
 
   const onSubmit = async (data: MateriaPrimaUpdate) => {
-    console.log(data);
     if (!materiaPrimaId) return;
     try {
-      // Aquí iría la llamada al hook de actualización
-      // await updateMateriaPrima(materiaPrimaId, data);
+      await updateMateriaPrima.mutateAsync({ id: materiaPrimaId, data });
       onclose();
       addToast({
-        title: "Actualizacion Exitosa",
+        title: "Actualización Exitosa",
         description: "Materia prima actualizada correctamente",
-        color: "primary",
+        color: "success",
         timeout: 3000,
         shouldShowTimeoutProgress: true,
       });
     } catch (error) {
-      console.log("Error al actualizar la materia prima: ", error);
+      addToast({
+        title: "Error",
+        description: "No se pudo actualizar la materia prima",
+        color: "danger",
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     }
   };
 
@@ -108,19 +119,20 @@ export const FormUpdate = ({
       <Controller
         name="fkUnidadMedida"
         control={control}
+        defaultValue={getUnidadMedidaId()}
         render={({ field }) => (
           <Select
             label="Unidad de Medida"
             placeholder="Seleccione una unidad de medida"
-            selectedKeys={field.value ? [String(field.value)] : []}
+            selectedKeys={field.value ? new Set([String(field.value)]) : new Set()}
             onSelectionChange={(keys) => {
               const selected = Array.from(keys)[0];
               field.onChange(selected ? Number(selected) : undefined);
             }}
           >
             {(unidadesMedida || []).map((um: any) => (
-              <SelectItem key={String(um.idUnidad)}>
-                {um.nombre} ({um.abreviatura})
+              <SelectItem key={um.idUnidad} textValue={um.nombre}>
+                {um.nombre}
               </SelectItem>
             ))}
           </Select>

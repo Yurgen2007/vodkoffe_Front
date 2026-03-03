@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useLotes } from "@/hooks/Lotes/useLotes";
 import { useInventario } from "@/hooks/Inventarios/useInventario";
 import { useCaracteristica } from "@/hooks/Caracteristicas/useCaracteristicas";
+import { useUnidad } from "@/hooks/UnidadesMedida/useUnidad";
 import Buton from "@/components/molecules/Button";
 
 interface FormUpdateUnidadesProps {
@@ -24,6 +25,7 @@ export default function FormUpdateUnidades({
   const { data: lotes } = useLotes();
   const { inventarios } = useInventario();
   const { caracteristicas } = useCaracteristica();
+  const { unidades: unidadesMedida } = useUnidad();
 
   const {
     register,
@@ -43,6 +45,7 @@ export default function FormUpdateUnidades({
         fkLote: unidad.fkLote ? String(unidad.fkLote) : undefined,
         fkInventario: unidad.fkInventario ? String(unidad.fkInventario) : undefined,
         fkCaracteristica: unidad.fkCaracteristica ? String(unidad.fkCaracteristica) : undefined,
+        fkUnidadMedida: unidad.fkUnidadMedida ? String(unidad.fkUnidadMedida) : undefined,
       });
     }
   }, [unidad, reset]);
@@ -69,6 +72,11 @@ export default function FormUpdateUnidades({
       // Solo incluir fkCaracteristica si se seleccionó una
       if (data.fkCaracteristica) {
         payload.fkCaracteristica = Number(data.fkCaracteristica);
+      }
+
+      // Solo incluir fkUnidadMedida si se seleccionó una
+      if (data.fkUnidadMedida) {
+        payload.fkUnidadMedida = Number(data.fkUnidadMedida);
       }
 
       console.log('Payload a enviar:', payload);
@@ -156,6 +164,26 @@ export default function FormUpdateUnidades({
             {(caracteristicas || []).map((c: any) => (
               <SelectItem key={String(c.idCaracteristica)}>
                 {c.nombre}
+              </SelectItem>
+            ))}
+          </Select>
+        )}
+      />
+
+      {/* Selector de Unidad de Medida */}
+      <Controller
+        name="fkUnidadMedida"
+        control={control}
+        render={({ field }) => (
+          <Select
+            label="Unidad de Medida"
+            placeholder="Seleccione una unidad de medida (opcional)"
+            selectedKeys={field.value ? [field.value] : []}
+            onSelectionChange={(keys) => field.onChange(Array.from(keys)[0] as string)}
+          >
+            {(unidadesMedida || []).map((um: any) => (
+              <SelectItem key={String(um.idUnidad)} textValue={um.nombre}>
+                {um.nombre}
               </SelectItem>
             ))}
           </Select>

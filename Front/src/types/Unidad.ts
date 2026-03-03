@@ -1,5 +1,5 @@
 // Estados válidos para una unidad física
-export type EstadoUnidad = 'DISPONIBLE' | 'VENDIDA' | 'DEGUSTACION' | 'ALIANZA' | 'OTRO';
+export type EstadoUnidad = 'DISPONIBLE' | 'VENDIDA' | 'DEGUSTACION' | 'ALIANZA' | 'OTRO' | 'INACTIVO';
 
 // Tipo completo de unidad
 export type Unidad = {

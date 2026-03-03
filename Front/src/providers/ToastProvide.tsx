@@ -9,7 +9,7 @@ interface ProvidersProps {
 export default function Providers({ children }: ProvidersProps) {
   return (
     <HeroUIProvider>
-      <ToastProvider />
+      <ToastProvider aria-label="Alertas del sistema" />
       {children}
     </HeroUIProvider>
   );

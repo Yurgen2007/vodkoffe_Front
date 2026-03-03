@@ -16,7 +16,7 @@ export default function Sidebar() {
   const mappingItems = [
     {
       id: 0,
-      nombre: "Home",
+      nombre: "Movimientos",
       icono: "HomeIcon",
       href: "/",
     },
@@ -41,7 +41,7 @@ export default function Sidebar() {
     <aside
       className={`h-screen ${
         collapsed ? "w-15" : "w-64"
-      } bg-darkTeal text-white dark:bg-zinc-800 dark:text-white flex flex-col transition-all duration-300`}
+      } bg-sidebar-bg dark:bg-zinc-800 text-sidebar-text dark:text-sidebar-text flex flex-col transition-all duration-300 border-r-2 border-[var(--color-border)] dark:border-none`}
     >
       <div className="flex items-center justify-between p-4">
         {!collapsed && (
@@ -54,7 +54,7 @@ export default function Sidebar() {
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="bg-darkTeal text-white dark:bg-zinc-800 dark:text-white"
+          className="bg-sidebar text-sidebar-text dark:bg-zinc-800 dark:text-sidebar-text"
         >
           <Bars3Icon className="w-5 h-5" />
         </button>
@@ -70,7 +70,7 @@ export default function Sidebar() {
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg w-full text-left transition-colors ${
                   location.pathname === item.href
                     ? "bg-primary text-white"
-                    : "hover:bg-primary text-black-300"
+                    : "hover:bg-primary text-sidebar-text dark:hover:bg-primary dark:text-sidebar-text-hover"
                 }`}
               >
                 <Icono className="w-6 h-6" />
@@ -88,7 +88,7 @@ export default function Sidebar() {
                         className={`flex items-center gap-3 px-3 py-2 rounded-lg w-full text-left transition-colors ${
                           location.pathname === subItem.href
                             ? "bg-primary text-white"
-                            : "hover:bg-primary text-black-300"
+                            : "hover:bg-primary text-sidebar-text dark:hover:bg-primary dark:text-sidebar-text-hover"
                         }`}
                       >
                         <SubIcono className="w-6 h-6" />

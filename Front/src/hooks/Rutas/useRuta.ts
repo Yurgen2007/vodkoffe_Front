@@ -24,7 +24,6 @@ export function useRuta() {
       });
     },
     onError: (error) => {
-      console.log("Error al cargar la ruta", error);
     },
   });
 

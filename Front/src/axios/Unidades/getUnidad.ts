@@ -44,3 +44,9 @@ export const deleteUnidad = async (id: number) => {
   const response = await api.delete(`/unidades/${id}`);
   return response.data;
 };
+
+// Verificar si un código de unidad ya existe
+export const verificarCodigoUnidad = async (codigo: string) => {
+  const response = await api.get(`/unidades/verificar-codigo?codigo=${encodeURIComponent(codigo)}`);
+  return response.data;
+};

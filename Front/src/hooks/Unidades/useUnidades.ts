@@ -1,3 +1,4 @@
+import { addToast } from '@heroui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   getUnidades, 
@@ -59,27 +60,38 @@ export const useCreateUnidad = () => {
   
   return useMutation({
     mutationFn: async (data: UnidadCreate | UnidadCreate[]) => {
-      console.log('Datos recibidos en mutate:', data);
-      console.log('Es array?:', Array.isArray(data));
       // Si es un array, crear cada unidad
       if (Array.isArray(data)) {
-        console.log('Cantidad de unidades a crear:', data.length);
         const results = [];
         for (const unidad of data) {
-          console.log('Creando unidad:', unidad);
           const result = await postUnidad(unidad);
           results.push(result);
         }
         return results;
       }
       // Si es un solo objeto
-      console.log('Creando una sola unidad:', data);
       return postUnidad(data);
     },
-    onSettled: () => {
-      // Forzar refetch después de que la mutación termine (éxito o error)
+    onSuccess: () => {
+      addToast({
+        title: 'Unidad(es) creada(s) correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({ queryKey: ['unidades-fisicas'] });
       queryClient.invalidateQueries({ queryKey: ['lotes'] });
+    },
+    onError: (error: any) => {
+      // Extraer mensaje de error del servidor
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Error al crear unidad';
+      addToast({
+        title: 'Error al crear unidad',
+        description: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage,
+        color: 'danger',
+        timeout: 5000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 };
@@ -91,7 +103,22 @@ export const useRegistrarUnidadLote = () => {
     mutationFn: ({ loteId, data }: { loteId: number; data: RegistrarUnidadLote }) => 
       postRegistrarUnidadLote(loteId, data),
     onSuccess: () => {
+      addToast({
+        title: 'Unidad registrada en lote correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({ queryKey: ['unidades-fisicas'] });
+    },
+    onError: (error) => {
+      addToast({
+        title: 'Error al registrar unidad en lote',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 };
@@ -103,7 +130,22 @@ export const useRegistrarMultiplesUnidadesLote = () => {
     mutationFn: ({ loteId, data }: { loteId: number; data: RegistrarUnidadesLote }) => 
       postRegistrarMultiplesUnidadesLote(loteId, data),
     onSuccess: () => {
+      addToast({
+        title: 'Unidades registradas en lote correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({ queryKey: ['unidades-fisicas'] });
+    },
+    onError: (error) => {
+      addToast({
+        title: 'Error al registrar unidades en lote',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 };
@@ -113,10 +155,24 @@ export const useUpdateUnidad = () => {
   
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UnidadUpdate }) => putUnidad(id, data),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
+      addToast({
+        title: 'Unidad actualizada correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({ queryKey: ['unidades-fisicas'] });
-      queryClient.invalidateQueries({ queryKey: ['unidades-fisicas', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['lotes'] });
+    },
+    onError: (error) => {
+      addToast({
+        title: 'Error al actualizar unidad',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 };
@@ -127,8 +183,23 @@ export const useDeleteUnidad = () => {
   return useMutation({
     mutationFn: (id: number) => deleteUnidad(id),
     onSuccess: () => {
+      addToast({
+        title: 'Unidad eliminada correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({ queryKey: ['unidades-fisicas'] });
       queryClient.invalidateQueries({ queryKey: ['lotes'] });
+    },
+    onError: (error) => {
+      addToast({
+        title: 'Error al eliminar unidad',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 };

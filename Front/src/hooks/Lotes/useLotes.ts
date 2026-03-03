@@ -1,3 +1,4 @@
+import { addToast } from '@heroui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   getLotes, 
@@ -9,7 +10,8 @@ import {
   putLote, 
   deleteLote,
   postRegistrarUnidadLote,
-  postRegistrarMultiplesUnidadesLote
+  postRegistrarMultiplesUnidadesLote,
+  postMateriasPrimasConLote
 } from '../../axios/Lotes/getLote';
 import { LoteCreate, LoteUpdate } from '../../types/Lote';
 
@@ -58,7 +60,22 @@ export const useCreateLote = () => {
   return useMutation({
     mutationFn: (data: LoteCreate) => postLote(data),
     onSuccess: () => {
+      addToast({
+        title: 'Lote creado correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({ queryKey: ['lotes'] });
+    },
+    onError: (error) => {
+      addToast({
+        title: 'Error al crear lote',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 };
@@ -68,9 +85,23 @@ export const useUpdateLote = () => {
   
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: LoteUpdate }) => putLote(id, data),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
+      addToast({
+        title: 'Lote actualizado correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({ queryKey: ['lotes'] });
-      queryClient.invalidateQueries({ queryKey: ['lotes', variables.id] });
+    },
+    onError: (error) => {
+      addToast({
+        title: 'Error al actualizar lote',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 };
@@ -81,7 +112,22 @@ export const useDeleteLote = () => {
   return useMutation({
     mutationFn: (id: number) => deleteLote(id),
     onSuccess: () => {
+      addToast({
+        title: 'Lote eliminado correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({ queryKey: ['lotes'] });
+    },
+    onError: (error) => {
+      addToast({
+        title: 'Error al eliminar lote',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 };
@@ -109,6 +155,27 @@ export const useRegistrarMultiplesUnidadesLote = () => {
       queryClient.invalidateQueries({ queryKey: ['lotes'] });
       queryClient.invalidateQueries({ queryKey: ['lotes', variables.loteId, 'unidades'] });
       queryClient.invalidateQueries({ queryKey: ['lotes', variables.loteId, 'estado'] });
+    },
+  });
+};
+
+export const useCrearMateriasPrimasConLote = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: {
+      materiasPrimas: {
+        nombre: string;
+        descripcion?: string;
+        cantidad: number;
+        costoUnitario: number;
+        fkUnidadMedida?: number;
+      }[];
+      fkLote: number;
+    }) => postMateriasPrimasConLote(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['materiasPrimas'] });
+      queryClient.invalidateQueries({ queryKey: ['lotes'] });
     },
   });
 };

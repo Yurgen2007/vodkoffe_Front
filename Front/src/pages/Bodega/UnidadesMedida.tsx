@@ -31,7 +31,9 @@ export const UnidadTable = () => {
   };
 
   const handleDelete = async (idUnidad: number) => {
-    await changeState(idUnidad);
+    if (confirm("¿Está seguro de desactivar esta unidad de medida?")) {
+      await changeState(idUnidad);
+    }
   };
 
   const handleAddUnidad = async (unidad: UnidadMedidaCreate) => {
@@ -177,7 +179,7 @@ export const UnidadTable = () => {
             }
             onDelete={userHasPermission(21) ? (unidad) => handleDelete(unidad.idUnidad) : undefined}
             onEdit={userHasPermission(20) ? handleEdit : undefined}
-            useDeleteInsteadOfChangeState
+            useDeleteInsteadOfChangeState={false}
           />
         ) : (
           <div className="text-center py-8 text-gray-500">

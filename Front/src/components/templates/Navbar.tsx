@@ -33,11 +33,11 @@ export function Nav({
   const { nombre, perfil } = useAuth();
 
   return (
-    <Navbar>
+    <Navbar className="bg-navbar">
       <NavbarContent justify="start">
         <NavbarBrand className="mr-4">
           <FormatrackLogo />
-          <p className="hidden sm:block font-bold text-inherit">FarmaMedica</p>
+          <p className="hidden sm:block font-bold text-text-primary"> </p>
         </NavbarBrand>
       </NavbarContent>
 
@@ -46,7 +46,7 @@ export function Nav({
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
               <button
-                className="relative text-gray-700 dark:text-white"
+                className="relative text-text-secondary"
                 onClick={onOpenNotifications}
               >
                 <BellIcon className="w-6 h-6" />
@@ -59,7 +59,7 @@ export function Nav({
               </button>
             </DropdownTrigger>
 
-            <DropdownMenu aria-label="Notificaciones" className="max-w-sm w-72">
+            <DropdownMenu aria-label="Menu de notificaciones" className="max-w-sm w-72">
               <DropdownItem
                 key="notificaciones-header"
                 isReadOnly

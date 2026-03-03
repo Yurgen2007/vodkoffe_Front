@@ -11,6 +11,7 @@ import {
   Pagination,
   Select,
   SelectItem,
+  Switch,
 } from "@heroui/react";
 import {
   Table,
@@ -29,7 +30,7 @@ export interface TableColumn<T> {
   render?: (item: T) => JSX.Element;
 }
 
-interface TableProps<T extends { key: string; estado?: boolean | string }> {
+interface TableProps<T extends { key?: string; estado?: boolean | string }> {
   data: T[];
   columns: TableColumn<T>[];
   onEdit?: (item: T) => void | boolean;
@@ -39,9 +40,18 @@ interface TableProps<T extends { key: string; estado?: boolean | string }> {
   useDeleteInsteadOfChangeState?: boolean;
   searchValue?: (item: T) => string;
   extraHeaderContent?: React.ReactNode;
+  ariaLabel?: string;
+  // Filtro de lote
+  lotes?: Array<{ idLote: number | string; codigoLote: string }>;
+  onLoteChange?: (loteId: string) => void;
+  // Clave única para la tabla
+  uniqueKey?: keyof T;
 }
 
-const Globaltable = <T extends { key: string; estado?: boolean | string }>({
+const Globaltable = <T extends { key?: string; estado?: boolean | string } = {
+  key?: string;
+  estado?: boolean | string;
+}>({
   data,
   columns,
   onEdit,
@@ -50,7 +60,24 @@ const Globaltable = <T extends { key: string; estado?: boolean | string }>({
   showActions = true,
   useDeleteInsteadOfChangeState = false,
   extraHeaderContent,
+  ariaLabel = "Tabla de datos",
+  lotes,
+  onLoteChange,
+  uniqueKey,
 }: TableProps<T>) => {
+  // Generar una clave única para cada item si no existe
+  const dataWithKeys = useMemo(() => {
+    return (Array.isArray(data) ? data : []).map((item, index) => {
+      if (item.key) return item;
+      // Usar la clave única proporcionada o generar una basada en el índice
+      const uniqueValue = uniqueKey ? item[uniqueKey] : `row-${index}`;
+      return { ...item, key: String(uniqueValue) };
+    });
+  }, [data, uniqueKey]);
+  
+  // Manejar datos inválidos
+  const validData = dataWithKeys;
+  
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [sortConfig, setSortConfig] = useState<{
@@ -64,19 +91,48 @@ const Globaltable = <T extends { key: string; estado?: boolean | string }>({
   const [estadoFiltro, setEstadoFiltro] = useState<
     "todos" | "activos" | "inactivos"
   >("todos");
+  const [loteFiltro, setLoteFiltro] = useState<string>("todos");
 
   const mostrarFiltroEstado = useMemo(() => {
-    return data.some((item) => "estado" in item);
-  }, [data]);
+    return validData.some((item) => "estado" in item);
+  }, [validData]);
+
+  // Nuevo: verificar si hay filtro de lote disponible
+  const mostrarFiltroLote = useMemo(() => {
+    return validData.some((item: any) => "loteId" in item) && lotes && lotes.length > 0;
+  }, [validData, lotes]);
 
   const filteredData = useMemo(() => {
-    let result = data;
+    let result = validData;
+
+    // Filtro por lote
+    if (loteFiltro !== "todos") {
+      result = result.filter((item: any) => {
+        return item.loteId === parseInt(loteFiltro);
+      });
+    }
 
     if (mostrarFiltroEstado) {
-      if (estadoFiltro === "activos") {
-        result = result.filter((item) => item.estado === true);
-      } else if (estadoFiltro === "inactivos") {
-        result = result.filter((item) => item.estado === false);
+      // Verificar si el estado es boolean o string
+      const firstItemWithEstado = validData.find((item) => 'estado' in item && item.estado !== undefined);
+      const estadoType = typeof firstItemWithEstado?.estado;
+      
+      if (estadoType === 'boolean') {
+        // Filtro para estados booleanos (MateriasPrimas, UnidadesMedida, etc.)
+        if (estadoFiltro === "activos") {
+          result = result.filter((item) => item.estado === true);
+        } else if (estadoFiltro === "inactivos") {
+          result = result.filter((item) => item.estado === false);
+        }
+      } else if (estadoType === 'string') {
+        // Filtro para estados string (Unidades: DISPONIBLE, INACTIVO, VENDIDA, etc.)
+        if (estadoFiltro === "activos") {
+          result = result.filter((item) => 
+            item.estado && item.estado !== 'INACTIVO' && item.estado !== 'VENDIDA'
+          );
+        } else if (estadoFiltro === "inactivos") {
+          result = result.filter((item) => item.estado === 'INACTIVO');
+        }
       }
     }
 
@@ -93,7 +149,7 @@ const Globaltable = <T extends { key: string; estado?: boolean | string }>({
     }
 
     return result;
-  }, [searchTerm, estadoFiltro, data, columns]);
+  }, [searchTerm, estadoFiltro, validData, columns, loteFiltro]);
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
@@ -190,6 +246,33 @@ const Globaltable = <T extends { key: string; estado?: boolean | string }>({
               </SelectItem>
             </Select>
           )}
+          {mostrarFiltroLote && (
+            <Select
+              aria-label="Filtro por lote"
+              className="w-48"
+              classNames={{
+                trigger: "dark:bg-zinc-900 text-black dark:text-white",
+              }}
+              color="primary"
+              label="Lote"
+              radius="md"
+              selectedKeys={[loteFiltro]}
+              size="sm"
+              variant="flat"
+              onSelectionChange={(keys) => {
+                const selected = Array.from(keys)[0] as string;
+                setLoteFiltro(selected);
+                onLoteChange?.(selected);
+              }}
+              items={[{ idLote: 'todos', codigoLote: 'todos' }, ...(lotes || [])]}
+            >
+              {(lote) => (
+                <SelectItem key={String(lote.idLote)} textValue={lote.codigoLote}>
+                  {lote.codigoLote === 'todos' ? 'Todos los lotes' : lote.codigoLote}
+                </SelectItem>
+              )}
+            </Select>
+          )}
         </div>
         <div className="flex">
           <Input
@@ -204,7 +287,7 @@ const Globaltable = <T extends { key: string; estado?: boolean | string }>({
         </div>
       </div>
       <div className="flex justify-between items-center px-4 py-2">
-        <div className="text-sm text-muted-foreground">{`Total ${data.length} elementos`}</div>
+        <div className="text-sm text-muted-foreground">{`Total ${validData.length} elementos`}</div>
         <div className="flex items-center space-x-2">
           <label className="text-sm text-muted-foreground">
             Filas por pagina:
@@ -226,7 +309,7 @@ const Globaltable = <T extends { key: string; estado?: boolean | string }>({
           </select>
         </div>
       </div>
-      <Table aria-label="Example table with dynamic content">
+      <Table aria-label={ariaLabel}>
         <TableHeader
           columns={
             showActions
@@ -280,15 +363,20 @@ const Globaltable = <T extends { key: string; estado?: boolean | string }>({
                               </button>
                             )}
                             {onDelete && (
-                              <button onClick={() => onDelete?.(item)}>
+                              <div className="flex items-center">
                                 {useDeleteInsteadOfChangeState ? (
-                                  <TrashIcon className="h-5 w-5 text-red-500" />
-                                ) : item.estado ? (
-                                  <TrashIcon className="h-5 w-5 text-red-500" />
+                                  <button onClick={() => onDelete?.(item)}>
+                                    <TrashIcon className="h-5 w-5 text-red-500" />
+                                  </button>
                                 ) : (
-                                  <CheckIcon className="h-5 w-5 text-primary" />
+                                  <Switch
+                                    size="sm"
+                                    isSelected={Boolean(item.estado)}
+                                    onValueChange={() => onDelete?.(item)}
+                                    color="success"
+                                  />
                                 )}
-                              </button>
+                              </div>
                             )}
                           </div>
                         );

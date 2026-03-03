@@ -2,11 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addToast } from "@heroui/react";
 
 import { Categoria, UpCategoria } from "@/types/Categorias";
-import { getCategorias } from "@/axios/Categorias/getCategorias";
-import { postCategorias } from "@/axios/Categorias/postCategorias";
-import { UpdCategoria } from "@/axios/Categorias/putCategorias";
-import { StateCategoria } from "@/axios/Categorias/putStateCategorias";
-import { deleteCategoriaReal } from "@/axios/Categorias/deleteCategoriaReal";
+import { getCategorias } from "../../axios/Categorias/getCategorias";
+import { postCategorias } from "../../axios/Categorias/postCategorias";
+import { UpdCategoria } from "../../axios/Categorias/putCategorias";
+import { StateCategoria } from "../../axios/Categorias/putStateCategorias";
+import { deleteCategoriaReal } from "../../axios/Categorias/deleteCategoriaReal";
 
 export function useCategoria() {
   const queryClient = useQueryClient();
@@ -24,7 +24,13 @@ export function useCategoria() {
       });
     },
     onError: (error) => {
-      console.log("Error al cargar la categoria", error);
+      addToast({
+        title: "Error al agregar categoría",
+        description: error.message,
+        color: "danger",
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 

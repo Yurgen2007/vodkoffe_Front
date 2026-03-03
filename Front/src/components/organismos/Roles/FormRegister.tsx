@@ -56,7 +56,6 @@ export default function FormularioRoles({
         type="text"
         {...register("nombre", { required: "El nombre es requerido" })}
         errorMessage={errors.nombre?.message}
-        isInvalid={!!errors.nombre}
       />
       <Controller
         control={control}

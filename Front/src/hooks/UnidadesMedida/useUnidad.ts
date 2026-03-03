@@ -24,12 +24,24 @@ export function useUnidad() {
   const addUnidadMutation = useMutation({
     mutationFn: postUnidad,
     onSuccess: () => {
+      addToast({
+        title: 'Unidad de medida creada correctamente',
+        color: 'success',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
       queryClient.invalidateQueries({
         queryKey: ["unidades"],
       });
     },
     onError: (error) => {
-      console.log("Error al cargar el unidad", error);
+      addToast({
+        title: 'Error al crear unidad de medida',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 
@@ -46,22 +58,9 @@ export function useUnidad() {
       return putUnidad(id, resto);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["unidades"],
-      });
-    },
-
-    onError: (error) => {
-      console.error("Error al actualizar:", error);
-    },
-  });
-
-  const changeStateMutation = useMutation({
-    mutationFn: deleteUnidad,
-    onSuccess: () => {
       addToast({
-        title: "Estado cambiado con exito",
-        color: "primary",
+        title: 'Unidad de medida actualizada correctamente',
+        color: 'success',
         timeout: 3000,
         shouldShowTimeoutProgress: true,
       });
@@ -71,7 +70,38 @@ export function useUnidad() {
     },
 
     onError: (error) => {
-      console.error("Error al actualizar estado:", error);
+      addToast({
+        title: 'Error al actualizar unidad de medida',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
+    },
+  });
+
+  const changeStateMutation = useMutation({
+    mutationFn: deleteUnidad,
+    onSuccess: () => {
+      addToast({
+        title: "Estado cambiado con éxito",
+        color: "success",
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["unidades"],
+      });
+    },
+
+    onError: (error) => {
+      addToast({
+        title: 'Error al cambiar estado',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 
@@ -80,7 +110,7 @@ export function useUnidad() {
     onSuccess: () => {
       addToast({
         title: "Unidad eliminada correctamente",
-        color: "primary",
+        color: "success",
         timeout: 3000,
         shouldShowTimeoutProgress: true,
       });
@@ -90,7 +120,13 @@ export function useUnidad() {
     },
 
     onError: (error) => {
-      console.error("Error al eliminar:", error);
+      addToast({
+        title: 'Error al eliminar unidad de medida',
+        description: error.message,
+        color: 'danger',
+        timeout: 3000,
+        shouldShowTimeoutProgress: true,
+      });
     },
   });
 

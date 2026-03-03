@@ -1,12 +1,10 @@
 export type Movimiento = {
   idMovimiento: number;
   tipo: string; // 'VENTA', 'NO_VENTA', 'INVENTARIO'
-  tipoNoVenta?: string; // 'DEGUSTACION', 'ALIANZA', 'OTRO'
   tipoInventario?: string; // 'entrada', 'salida', 'ajuste'
   cantidadVendida: number;
   cantidadDegustacion: number;
   cantidadAlianza: number;
-  cantidadOtro: number;
   cantidadInventario?: number;
   cantidadTotal: number;
   precioUnitario: number;
@@ -27,17 +25,15 @@ export type Movimiento = {
 
 export type MovimientoCreate = {
   tipo: 'VENTA' | 'NO_VENTA' | 'INVENTARIO';
-  tipoNoVenta?: 'DEGUSTACION' | 'ALIANZA' | 'OTRO';
   tipoInventario?: 'entrada' | 'salida' | 'ajuste';
   cantidadVendida: number;
   cantidadDegustacion: number;
   cantidadAlianza: number;
-  cantidadOtro: number;
   cantidadInventario?: number;
   precioUnitario: number;
   descripcion?: string;
   nombreCliente?: string; // Nombre del cliente al que se le vende
-  fechaMovimiento: string;
+  fechaMovimiento?: string; // Opcional - se genera automáticamente en el servidor
   fkLote: number;
   fkUsuario?: number;
   fkUnidad?: number;

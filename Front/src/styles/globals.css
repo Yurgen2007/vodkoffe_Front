@@ -2,15 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Variables CSS para Modo Claro */
 :root {
-	--color-primary: #38A169;
-	--color-primary-light: #48BB78;
-	--color-dark-teal: #234E52;
-	--color-teal-soft: #E6FFFA;
+  /* Fondos */
+  --color-bg-primary: #F5F3EF;
+  --color-bg-card: #FFFFFF;
+  --color-sidebar-bg: #F5F3EF;
+  --color-navbar: #FFFFFF;
+  
+  /* Texto */
+  --color-text-primary: #3C231F;
+  --color-text-secondary: #6B4A3F;
+  
+  /* Sidebar - Modo Claro */
+  --color-sidebar-text: #000000;
+  --color-sidebar-text-hover: #333333;
+  
+  /* Botones */
+  --color-button-primary: #965132;
+  --color-button-hover: #7A3F27;
+  
+  /* Bordes */
+  --color-border: #E5E0DA;
+  
+  /* Estados */
+  --color-success: #2E7D32;
+  --color-error: #C62828;
+  --color-warning: #F9A825;
+  --color-info: #1565C0;
 }
 
-/* Utility classes mapping CSS variables for easy use in non-tailwind places */
-.brand-bg { background-color: var(--color-primary); }
-.brand-bg-soft { background-color: var(--color-teal-soft); }
-.brand-text { color: var(--color-primary); }
-.brand-accent { color: var(--color-primary-light); }
+/* Variables CSS para Modo Oscuro */
+.dark {
+  /* Fondos */
+  --color-bg-primary: #000000;
+  --color-bg-card: #3C231F;
+  --color-sidebar: #3C231F;
+  --color-navbar: #3C231F;
+  
+  /* Texto */
+  --color-text-primary: #DEBD9A;
+  --color-text-secondary: #ECEBF0;
+  
+  /* Sidebar - Modo Oscuro */
+  --color-sidebar-text: #DEBD9A;
+  --color-sidebar-text-hover: #FFFFFF;
+  
+  /* Botones */
+  --color-button-primary: #965132;
+  --color-button-hover: #DEBD9A;
+  
+  /* Bordes */
+  --color-border: #965132;
+  
+  /* Estados */
+  --color-success: #4CAF50;
+  --color-error: #EF5350;
+  --color-warning: #FFCA28;
+  --color-info: #42A5F5;
+}
+
+/* Utility classes mapping CSS variables */
+.brand-bg { background-color: var(--color-bg-primary); }
+.brand-bg-card { background-color: var(--color-bg-card); }
+.brand-sidebar { background-color: var(--color-sidebar); }
+.brand-navbar { background-color: var(--color-navbar); }
+.brand-text { color: var(--color-text-primary); }
+.brand-text-secondary { color: var(--color-text-secondary); }
+.brand-button { background-color: var(--color-button-primary); }
+.brand-button-hover { background-color: var(--color-button-hover); }
+.brand-border { border-color: var(--color-border); }
+
+/* Estados */
+.success-text { color: var(--color-success); }
+.error-text { color: var(--color-error); }
+.warning-text { color: var(--color-warning); }
+.info-text { color: var(--color-info); }
+
+.success-bg { background-color: var(--color-success); }
+.error-bg { background-color: var(--color-error); }
+.warning-bg { background-color: var(--color-warning); }
+.info-bg { background-color: var(--color-info); }
