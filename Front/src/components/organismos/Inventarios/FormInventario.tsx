@@ -1,9 +1,11 @@
 import { Form } from "@heroui/form";
 import { Input } from "@heroui/react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { addToast } from "@heroui/react";
 
 import { useInventario } from "@/hooks/Inventarios/useInventario";
+import { InventarioCreateSchema } from "@/schemas/Inventario";
 
 type FormularioProps = {
   onClose: () => void;
@@ -18,6 +20,7 @@ export default function FormInventario({ onClose, id }: FormularioProps) {
     formState: { errors },
   } = useForm({
     mode: "onChange",
+    resolver: zodResolver(InventarioCreateSchema),
     defaultValues: {
       nombre: "",
       estado: true,

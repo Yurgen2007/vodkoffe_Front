@@ -1,8 +1,10 @@
 import { Form } from "@heroui/form";
 import { addToast, Input, Select, SelectItem } from "@heroui/react";
 import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { RolCreate } from "@/types/Rol";
+import { RolCreateSchema } from "@/schemas/Rol";
 
 type FormularioProps = {
   addData: (rol: RolCreate) => Promise<any>;
@@ -20,14 +22,16 @@ export default function FormularioRoles({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RolCreate>({
+  } = useForm({
     mode: "onChange",
+    resolver: zodResolver(RolCreateSchema),
     defaultValues: {
+      nombre: "",
       estado: true,
     },
   });
 
-  const onSubmit = async (data: RolCreate) => {
+  const onSubmit = async (data: any) => {
     try {
       console.log("Datos enviados:", data);
       await addData(data);
@@ -56,6 +60,7 @@ export default function FormularioRoles({
         type="text"
         {...register("nombre", { required: "El nombre es requerido" })}
         errorMessage={errors.nombre?.message}
+        isInvalid={!!errors.nombre}
       />
       <Controller
         control={control}

@@ -7,32 +7,30 @@ import { useState } from "react";
 import { useUnidad } from "@/hooks/UnidadesMedida/useUnidad";
 import { useLotes } from "@/hooks/Lotes/useLotes";
 import { useCrearMateriasPrimasConLote } from "@/hooks/Lotes/useLotes";
-import { MateriaPrimaCreate, MateriaPrimaCreateSchema } from "@/schemas/MateriaPrima";
 import { LoteCreate } from "@/types/Lote";
+import { MateriaPrimaCreateSchema } from "@/schemas/MateriaPrima";
 
-// Tipo para materia prima con cantidad y costo en el lote
-type MateriaPrimaWithCantidad = {
-  idMateriaPrima?: number;
-  nombre: string;
-  descripcion?: string;
-  cantidad: number;
-  costoUnitario: number;
-  costoTotal: number;
-  fkUnidadMedida?: number;
-};
+// Schema para validar el formulario de materias primas (referencia al schema centralizado)
+const MateriaPrimaFormSchema = MateriaPrimaCreateSchema.extend({
+  fkLote: z.number().optional(),
+  crearNuevoLote: z.boolean(),
+  nuevoLote: z.object({
+    codigoLote: z.string().min(1, "El código es requerido").min(2, "Mínimo 2 caracteres"),
+    cantidadUnidades: z.number().min(1, "Mínimo 1"),
+    fechaProduccion: z.string().min(1, "La fecha es requerida"),
+    fechaVencimiento: z.string().optional(),
+  }).optional(),
+  materiasPrimas: z.array(z.object({
+    nombre: z.string().min(1, "El nombre es requerido").min(2, "Mínimo 2 caracteres"),
+    descripcion: z.string().optional(),
+    cantidad: z.number().min(1, "La cantidad mínima es 1"),
+    costoUnitario: z.number().min(0.01, "El costo debe ser mayor a 0"),
+    costoTotal: z.number().optional(),
+    fkUnidadMedida: z.number().optional(),
+  })).min(1, "Agregue al menos una materia prima"),
+});
 
-// Tipo para el formulario completo
-type FormData = {
-  fkLote?: number;
-  crearNuevoLote: boolean;
-  nuevoLote?: {
-    codigoLote: string;
-    fechaProduccion: string;
-    fechaVencimiento?: string;
-    cantidadUnidades: number;
-  };
-  materiasPrimas: MateriaPrimaWithCantidad[];
-};
+import { z } from "zod";
 
 type FormularioProps = {
   addData: (data: any) => Promise<void>;
@@ -59,8 +57,9 @@ export default function FormularioMateriasPrimas({
     watch,
     setValue,
     formState: { errors },
-  } = useForm<FormData>({
+  } = useForm({
     mode: "onChange",
+    resolver: zodResolver(MateriaPrimaFormSchema),
     defaultValues: {
       crearNuevoLote: false,
       fkLote: undefined,
@@ -94,11 +93,11 @@ export default function FormularioMateriasPrimas({
 
   // Calcular total de todos los costos
   const totalCostos = materiasPrimasWatch?.reduce(
-    (sum: number, mp: MateriaPrimaWithCantidad) => sum + (Number(mp.costoTotal) || 0),
+    (sum: number, mp: any) => sum + (Number(mp.costoTotal) || 0),
     0
   ) || 0;
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: any) => {
     try {
       let loteId = data.fkLote;
 
@@ -116,12 +115,12 @@ export default function FormularioMateriasPrimas({
       // Si hay un lote seleccionado o creado, asociar las materias primas
       if (loteId) {
         // Filtrar solo las materias primas que tienen nombre
-        const materiasPrimasValidas = data.materiasPrimas.filter(mp => mp.nombre && mp.nombre.trim());
+        const materiasPrimasValidas = data.materiasPrimas.filter((mp: any) => mp.nombre && mp.nombre.trim());
         
         if (materiasPrimasValidas.length > 0) {
           await crearMateriasPrimasConLote.mutateAsync({
             fkLote: Number(loteId),
-            materiasPrimas: materiasPrimasValidas.map(mp => ({
+            materiasPrimas: materiasPrimasValidas.map((mp: any) => ({
               nombre: mp.nombre,
               descripcion: mp.descripcion || '',
               cantidad: Number(mp.cantidad) || 1,
@@ -134,10 +133,11 @@ export default function FormularioMateriasPrimas({
         // Si no hay lote, solo crear las materias primas como catálogo
         for (const mp of data.materiasPrimas) {
           if (mp.nombre.trim()) {
-            const materiaPrimaData: MateriaPrimaCreate = {
+            const materiaPrimaData = {
               nombre: mp.nombre,
               descripcion: mp.descripcion || undefined,
-              costoUnitario: mp.costoUnitario || 0,
+              cantidad: Number(mp.cantidad) || 1,
+              costoUnitario: Number(mp.costoUnitario) || 0,
               estado: true,
               fkUnidadMedida: mp.fkUnidadMedida,
             };
@@ -173,7 +173,7 @@ export default function FormularioMateriasPrimas({
       onSubmit={handleSubmit(onSubmit)}
     >
       {/* Sección de Lote */}
-      <div className="border-b border-gray-200 pb-4 mb-4">
+      <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
         <h3 className="text-lg font-semibold mb-3">Asociar a Lote</h3>
         
         <div className="flex gap-2 mb-3">
@@ -228,6 +228,7 @@ export default function FormularioMateriasPrimas({
             <Input
               label="Código Lote"
               placeholder="Ingrese el código"
+              className="dark:bg-gray-800"
               {...register("nuevoLote.codigoLote", { required: crearNuevoLote ? "El código es requerido" : false })}
               errorMessage={errors.nuevoLote?.codigoLote?.message}
               isInvalid={!!errors.nuevoLote?.codigoLote}
@@ -284,7 +285,8 @@ export default function FormularioMateriasPrimas({
               <Input
                 label="Nombre"
                 placeholder="Nombre de la materia prima"
-                {...register(`materiasPrimas.${index}.nombre`, { required: "El nombre es requerido" })}
+                className="dark:bg-gray-800"
+                {...register(`materiasPrimas.${index}.nombre`)}
                 errorMessage={errors.materiasPrimas?.[index]?.nombre?.message}
                 isInvalid={!!errors.materiasPrimas?.[index]?.nombre}
               />
@@ -292,6 +294,7 @@ export default function FormularioMateriasPrimas({
               <Input
                 label="Descripción"
                 placeholder="Descripción opcional"
+                className="dark:bg-gray-800"
                 {...register(`materiasPrimas.${index}.descripcion`)}
               />
 
@@ -321,10 +324,9 @@ export default function FormularioMateriasPrimas({
                 label="Cantidad"
                 type="number"
                 placeholder="Cantidad"
+                className="dark:bg-gray-800"
                 {...register(`materiasPrimas.${index}.cantidad`, { 
-                  valueAsNumber: true,
-                  min: { value: 1, message: "Mínimo 1" },
-                  onChange: () => calcularCostoTotal(index)
+                  valueAsNumber: true
                 })}
                 errorMessage={errors.materiasPrimas?.[index]?.cantidad?.message}
                 isInvalid={!!errors.materiasPrimas?.[index]?.cantidad}
@@ -335,10 +337,9 @@ export default function FormularioMateriasPrimas({
                 type="number"
                 step="0.01"
                 placeholder="$0.00"
+                className="dark:bg-gray-800"
                 {...register(`materiasPrimas.${index}.costoUnitario`, { 
-                  valueAsNumber: true,
-                  min: { value: 0, message: "Debe ser mayor o igual a 0" },
-                  onChange: () => calcularCostoTotal(index)
+                  valueAsNumber: true
                 })}
                 errorMessage={errors.materiasPrimas?.[index]?.costoUnitario?.message}
                 isInvalid={!!errors.materiasPrimas?.[index]?.costoUnitario}
@@ -349,7 +350,7 @@ export default function FormularioMateriasPrimas({
                 type="number"
                 isReadOnly
                 value={materiasPrimasWatch?.[index]?.costoTotal?.toFixed(2) || "0.00"}
-                className="bg-gray-100"
+                className="bg-white dark:bg-gray-800"
               />
             </div>
           </div>

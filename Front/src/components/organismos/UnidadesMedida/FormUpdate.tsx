@@ -1,11 +1,13 @@
 import { Form } from "@heroui/form";
 import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@heroui/input";
 import { addToast, Select, SelectItem } from "@heroui/react";
 import { useEffect } from "react";
 
 import { useUnidad } from "@/hooks/UnidadesMedida/useUnidad";
 import { UnidadMedida } from "@/types/UnidadMedida";
+import { UnidadMedidaUpdateSchema } from "@/schemas/UnidadMedida";
 import Buton from "@/components/molecules/Button";
 
 type Props = {
@@ -26,8 +28,9 @@ export const FormUpdate = ({ unidades, unidadId, id, onclose }: Props) => {
     control,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<UnidadMedida>({
+  } = useForm({
     mode: "onChange",
+    resolver: zodResolver(UnidadMedidaUpdateSchema),
     defaultValues: {
       idUnidad: foundUnidad?.idUnidad ?? 0,
       nombre: foundUnidad?.nombre,
@@ -46,7 +49,7 @@ export const FormUpdate = ({ unidades, unidadId, id, onclose }: Props) => {
     }
   }, [foundUnidad, reset]);
 
-  const onSubmit = async (data: UnidadMedida) => {
+  const onSubmit = async (data: any) => {
     console.log(data);
     if (!unidadId) return;
     try {

@@ -1,12 +1,14 @@
 import { Form } from "@heroui/form";
 import { addToast, Input, Select, SelectItem } from "@heroui/react";
 import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 
 import Buton from "@/components/molecules/Button";
 import { useUnidad } from "@/hooks/UnidadesMedida/useUnidad";
 import { useUpdateMateriaPrima } from "@/hooks/MateriasPrimas/useMateriaPrima";
 import { MateriaPrima, MateriaPrimaUpdate } from "@/types/MateriaPrima";
+import { MateriaPrimaUpdateSchema } from "@/schemas/MateriaPrima";
 
 type Props = {
   materiasPrimas: MateriaPrima[];
@@ -39,8 +41,9 @@ export const FormUpdate = ({
     control,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<MateriaPrimaUpdate>({
+  } = useForm({
     mode: "onChange",
+    resolver: zodResolver(MateriaPrimaUpdateSchema),
     defaultValues: {
       nombre: foundMateriaPrima?.nombre || "",
       descripcion: foundMateriaPrima?.descripcion || "",
@@ -60,7 +63,7 @@ export const FormUpdate = ({
     }
   }, [foundMateriaPrima, reset]);
 
-  const onSubmit = async (data: MateriaPrimaUpdate) => {
+  const onSubmit = async (data: any) => {
     if (!materiaPrimaId) return;
     try {
       await updateMateriaPrima.mutateAsync({ id: materiaPrimaId, data });
@@ -92,7 +95,7 @@ export const FormUpdate = ({
       <Input
         label="Nombre"
         placeholder="Nombre de la materia prima"
-        {...register("nombre", { required: "El nombre es requerido" })}
+        {...register("nombre")}
         errorMessage={errors.nombre?.message}
         isInvalid={!!errors.nombre}
       />
@@ -108,10 +111,7 @@ export const FormUpdate = ({
         placeholder="Costo unitario"
         type="number"
         step="0.01"
-        {...register("costoUnitario", { 
-          valueAsNumber: true,
-          min: { value: 0, message: "El costo debe ser mayor o igual a 0" }
-        })}
+        {...register("costoUnitario", { valueAsNumber: true })}
         errorMessage={errors.costoUnitario?.message}
         isInvalid={!!errors.costoUnitario}
       />

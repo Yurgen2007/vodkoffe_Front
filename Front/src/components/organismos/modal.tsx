@@ -33,12 +33,14 @@ export default function Modall({
       onOpenChange={onOpenChange}
     >
       <ModalContent>
-        <>
-          <ModalHeader className="flex flex-col gap-1 text-center">
-            {ModalTitle}
-          </ModalHeader>
-          <ModalBody>{children}</ModalBody>
-        </>
+        {() => (
+          <>
+            <ModalHeader className="flex flex-col gap-1 text-center">
+              {ModalTitle}
+            </ModalHeader>
+            <ModalBody>{children}</ModalBody>
+          </>
+        )}
       </ModalContent>
     </Modal>
   );

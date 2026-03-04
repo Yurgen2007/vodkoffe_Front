@@ -1,9 +1,12 @@
 import { Form } from "@heroui/form";
 import { addToast, Input } from "@heroui/react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 
 import { LoteCreate } from "@/types/Lote";
+import { LoteCreateSchema } from "@/schemas/Lotes";
+import { commonDefaultValues } from "@/utils/defaultValues";
 
 type FormularioProps = {
   addData: (data: LoteCreate) => Promise<void>;
@@ -25,11 +28,13 @@ export default function FormularioLotes({
     reset,
   } = useForm<LoteCreate>({
     mode: "onChange",
+    resolver: zodResolver(LoteCreateSchema),
     defaultValues: initialData || {
       codigoLote: "",
-      fechaProduccion: new Date().toISOString().split("T")[0],
+      cantidadUnidades: commonDefaultValues.cantidadUnidades,
+      fechaProduccion: commonDefaultValues.fechaProduccion,
       fechaVencimiento: "",
-      costoUnitario: 0,
+      costoUnitario: commonDefaultValues.costoUnitario,
     },
   });
 
@@ -40,7 +45,7 @@ export default function FormularioLotes({
     }
   }, [initialData, reset]);
 
-  const onSubmit = async (data: LoteCreate) => {
+  const onSubmit = async (data: any) => {
     try {
       await addData(data);
       onClose();
@@ -66,14 +71,22 @@ export default function FormularioLotes({
         label="Código Lote"
         placeholder="Ingrese el código del lote"
         type="text"
-        {...register("codigoLote", { required: "El código es requerido" })}
+        {...register("codigoLote")}
         errorMessage={errors.codigoLote?.message}
         isInvalid={!!errors.codigoLote}
       />
       <Input
+        label="Cantidad Unidades"
+        placeholder="12"
+        type="number"
+        value="12"
+        isReadOnly
+        variant="bordered"
+      />
+      <Input
         label="Fecha Producción"
         type="date"
-        {...register("fechaProduccion", { required: "La fecha de producción es requerida" })}
+        {...register("fechaProduccion")}
         errorMessage={errors.fechaProduccion?.message}
         isInvalid={!!errors.fechaProduccion}
       />
@@ -89,11 +102,7 @@ export default function FormularioLotes({
         placeholder="Ingrese el costo unitario"
         type="number"
         step="0.01"
-        {...register("costoUnitario", { 
-          required: "El costo unitario es requerido",
-          valueAsNumber: true,
-          min: { value: 0, message: "El costo debe ser mayor o igual a 0" }
-        })}
+        {...register("costoUnitario", { valueAsNumber: true })}
         errorMessage={errors.costoUnitario?.message}
         isInvalid={!!errors.costoUnitario}
       />

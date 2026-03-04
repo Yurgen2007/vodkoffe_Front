@@ -1,10 +1,11 @@
 import { Form } from "@heroui/form";
 import { addToast, Input, Select, SelectItem, Button } from "@heroui/react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo } from "react";
 
-import { MovimientoCreate } from "@/types/Movimiento";
 import { useLotes } from "@/hooks/Lotes/useLotes";
+import { MovimientoCreateSchema, MovimientoCreate } from "@/schemas/Movimientos";
 
 type FormularioProps = {
   addData: (data: MovimientoCreate) => Promise<void>;
@@ -31,9 +32,11 @@ export default function FormularioMovimientos({
     watch,
     setValue,
     reset,
+    control,
     formState: { errors },
-  } = useForm<MovimientoCreate>({
+  } = useForm({
     mode: "onChange",
+    resolver: zodResolver(MovimientoCreateSchema),
     defaultValues: initialData ? {
       tipo: initialData.tipo || "VENTA",
       cantidadVendida: initialData.cantidadVendida ?? 0,
@@ -103,14 +106,23 @@ export default function FormularioMovimientos({
 
   const precioTotalCalculado = calcularPrecioTotal();
 
-  const onSubmit = async (data: MovimientoCreate) => {
+  const onSubmit = async (data: any) => {
     try {
-      const dataConPrecio = {
-        ...data,
+      // Las validaciones ahora están en el schema Zod
+      // Convertir los datos al formato requerido por el tipo
+      const movimientoData: MovimientoCreate = {
         tipo: data.tipo || 'VENTA',
+        cantidadVendida: Number(data.cantidadVendida) || 0,
+        cantidadDegustacion: Number(data.cantidadDegustacion) || 0,
+        cantidadAlianza: Number(data.cantidadAlianza) || 0,
+        cantidadInventario: data.cantidadInventario ? Number(data.cantidadInventario) : undefined,
         precioUnitario: precioUnitarioLote,
+        descripcion: data.descripcion || '',
+        nombreCliente: data.nombreCliente || '',
+        fkLote: Number(data.fkLote),
       };
-      await addData(dataConPrecio);
+      
+      await addData(movimientoData);
       onClose();
       addToast({
         title: "Registro exitoso",
@@ -146,12 +158,21 @@ export default function FormularioMovimientos({
       {/* Si está editando, solo mostrar campos editables */}
       {isEditing ? (
         <>
-          <Input
-            label="Nombre Cliente"
-            placeholder="Nombre del cliente al que se le vende"
-            type="text"
-            defaultValue={initialData?.nombreCliente || ''}
-            onChange={(e) => setValue('nombreCliente', e.target.value)}
+          <Controller
+            name="nombreCliente"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                label="Nombre Cliente"
+                placeholder="Nombre del cliente al que se le vende"
+                type="text"
+                value={field.value || ''}
+                onChange={(e) => field.onChange(e.target.value)}
+                isInvalid={!!errors.nombreCliente}
+                errorMessage={errors.nombreCliente?.message}
+              />
+            )}
           />
 
           <Input
@@ -166,23 +187,32 @@ export default function FormularioMovimientos({
         <>
           {/* Campos para nuevo movimiento */}
           {/* Campo lote */}
-          <Select
-            label="Lote"
-            defaultSelectedKeys={selectedKeys}
-            selectedKeys={selectedKeys}
-            onSelectionChange={(keys) => {
-              const selected = Array.from(keys)[0];
-              if (selected) {
-                setValue("fkLote", Number(selected));
-              }
-            }}
-          >
-            {(lotes || []).map((lote: any) => (
-              <SelectItem key={String(lote.idLote)}>
-                {lote.codigoLote} ({lote.unidades?.filter((u: any) => u.estado === 'DISPONIBLE').length || 0} disponibles)
-              </SelectItem>
-            ))}
-          </Select>
+          <Controller
+            name="fkLote"
+            control={control}
+            render={({ field }) => (
+              <Select
+                label="Lote"
+                placeholder="Seleccione un lote"
+                defaultSelectedKeys={selectedKeys}
+                selectedKeys={selectedKeys}
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0];
+                  if (selected) {
+                    field.onChange(Number(selected));
+                  }
+                }}
+                isInvalid={!!errors.fkLote}
+                errorMessage={errors.fkLote?.message}
+              >
+                {(lotes || []).map((lote: any) => (
+                  <SelectItem key={String(lote.idLote)}>
+                    {lote.codigoLote} ({lote.unidades?.filter((u: any) => u.estado === 'DISPONIBLE').length || 0} disponibles)
+                  </SelectItem>
+                ))}
+              </Select>
+            )}
+          />
 
           {/* Campo tipo de movimiento - solo VENTA para este formulario */}
           <Select
@@ -193,35 +223,75 @@ export default function FormularioMovimientos({
             <SelectItem key="VENTA">Venta</SelectItem>
           </Select>
 
-          <Input
-            label="Nombre Cliente"
-            placeholder="Nombre del cliente al que se le vende"
-            type="text"
-            onChange={(e) => setValue('nombreCliente', e.target.value)}
+          <Controller
+            name="nombreCliente"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                label="Nombre Cliente"
+                placeholder="Nombre del cliente al que se le vende"
+                type="text"
+                value={field.value || ""}
+                onChange={(e) => field.onChange(e.target.value)}
+                isInvalid={!!errors.nombreCliente}
+                errorMessage={errors.nombreCliente?.message}
+              />
+            )}
           />
 
           {/* Campo cantidadVendida */}
-          <Input
-            label="Cantidad Vendida"
-            placeholder="Cantidad vendida"
-            type="number"
-            onChange={(e) => setValue('cantidadVendida', Number(e.target.value) || 0)}
+          <Controller
+            name="cantidadVendida"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                label="Cantidad Vendida"
+                placeholder="Cantidad vendida"
+                type="number"
+                value={field.value?.toString() || "0"}
+                onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                isInvalid={!!errors.cantidadVendida}
+                errorMessage={errors.cantidadVendida?.message}
+              />
+            )}
           />
 
           {/* Campo cantidadDegustacion */}
-          <Input
-            label="Cantidad Degustación"
-            placeholder="Cantidad para degustación"
-            type="number"
-            onChange={(e) => setValue('cantidadDegustacion', Number(e.target.value) || 0)}
+          <Controller
+            name="cantidadDegustacion"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                label="Cantidad Degustación"
+                placeholder="Cantidad para degustación"
+                type="number"
+                value={field.value?.toString() || "0"}
+                onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                isInvalid={!!errors.cantidadDegustacion}
+                errorMessage={errors.cantidadDegustacion?.message}
+              />
+            )}
           />
 
           {/* Campo cantidadAlianza */}
-          <Input
-            label="Cantidad Alianza"
-            placeholder="Cantidad para alianza"
-            type="number"
-            onChange={(e) => setValue('cantidadAlianza', Number(e.target.value) || 0)}
+          <Controller
+            name="cantidadAlianza"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                label="Cantidad Alianza"
+                placeholder="Cantidad para alianza"
+                type="number"
+                value={field.value?.toString() || "0"}
+                onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                isInvalid={!!errors.cantidadAlianza}
+                errorMessage={errors.cantidadAlianza?.message}
+              />
+            )}
           />
 
           {/* Precio unitario del lote (solo lectura) */}

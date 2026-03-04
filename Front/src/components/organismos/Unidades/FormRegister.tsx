@@ -9,7 +9,6 @@ import { useInventario } from "@/hooks/Inventarios/useInventario";
 import { useCaracteristica } from "@/hooks/Caracteristicas/useCaracteristicas";
 import { useUnidad } from "@/hooks/UnidadesMedida/useUnidad";
 import { UnidadCreate, UnidadCreateSchema } from "@/schemas/Unidad";
-import { verificarCodigoUnidad } from "@/axios/Unidades/getUnidad";
 
 interface FormRegisterUnidadesProps {
   addData: (data: any) => Promise<void>;
@@ -49,57 +48,23 @@ export default function FormRegisterUnidades({
     },
   });
 
-  const onSubmit = async (data: UnidadCreate) => {
+  const onSubmit = async (data: any) => {
     try {
       // Convertir el campo de código a array (soportar múltiples códigos)
       const codigosRaw = (data.codigoUnidad || '').trim();
       
-      // Si no hay código, generar uno automáticamente
-      if (!codigosRaw) {
-        addToast({
-          title: "Código requerido",
-          description: "Por favor ingrese al menos un código de unidad",
-          color: "warning",
-        });
-        return;
-      }
-      
       // Separar por comas, saltos de línea o guiones
       const codigos = codigosRaw
         .split(/[,\n\-]/)
-        .map(c => c.trim())
-        .filter(c => c !== '');
-
-      console.log('Códigos parseados:', codigos);
-
-      // Verificar si los códigos ya existen antes de enviar
-      const codigosDuplicados: string[] = [];
-      for (const codigo of codigos) {
-        try {
-          const result = await verificarCodigoUnidad(codigo);
-          if (result.existe) {
-            codigosDuplicados.push(codigo);
-          }
-        } catch (error) {
-          console.error('Error verificando código:', codigo, error);
-        }
-      }
-
-      if (codigosDuplicados.length > 0) {
-        addToast({
-          title: "Códigos duplicados",
-          description: `Los siguientes códigos ya están registrados: ${codigosDuplicados.join(', ')}. Por favor use códigos diferentes.`,
-          color: "warning",
-        });
-        return; // Detener el registro
-      }
+        .map((c: any) => c.trim())
+        .filter((c: any) => c !== '');
 
       // Determinar si es modo múltiple
       const esMultiple = modoMultiple || codigos.length > 1;
 
       if (esMultiple && codigos.length > 0) {
         // Crear array de unidades
-        const unidades = codigos.map(codigoUnidad => ({
+        const unidades = codigos.map((codigoUnidad: any) => ({
           codigoUnidad,
           fkLote: data.fkLote ? Number(data.fkLote) : undefined,
           fkInventario: data.fkInventario ? Number(data.fkInventario) : undefined,
@@ -116,7 +81,7 @@ export default function FormRegisterUnidades({
         });
       } else {
         // Modo单个 (un solo código) - usar el código ya validado
-        const payload: UnidadCreate = {
+        const payload: any = {
           codigoUnidad: codigosRaw,
           fkLote: data.fkLote ? Number(data.fkLote) : undefined,
           fkInventario: data.fkInventario ? Number(data.fkInventario) : undefined,
@@ -162,7 +127,7 @@ export default function FormRegisterUnidades({
         <Textarea
           label="Códigos de unidades"
           placeholder="COD001, COD002 o uno por línea"
-          {...register("codigoUnidad", { required: "Código requerido" })}
+          {...register("codigoUnidad")}
           isInvalid={!!errors.codigoUnidad}
           errorMessage={errors.codigoUnidad?.message}
           minRows={3}
@@ -171,7 +136,7 @@ export default function FormRegisterUnidades({
         <Input
           label="Código unidad"
           placeholder="Ingrese el código de la unidad"
-          {...register("codigoUnidad", { required: "Código requerido" })}
+          {...register("codigoUnidad")}
           isInvalid={!!errors.codigoUnidad}
           errorMessage={errors.codigoUnidad?.message}
         />
@@ -187,6 +152,8 @@ export default function FormRegisterUnidades({
             placeholder="Seleccione un lote"
             selectedKeys={field.value ? [field.value] : []}
             onSelectionChange={(keys) => field.onChange(Array.from(keys)[0] as string)}
+            isInvalid={!!errors.fkLote}
+            errorMessage={errors.fkLote?.message}
           >
             {(lotes || []).map((lote: any) => (
               <SelectItem key={String(lote.idLote)} textValue={`${lote.codigoLote} (${lote.unidades?.length || 0}/12)`}>
@@ -207,6 +174,8 @@ export default function FormRegisterUnidades({
             placeholder="Seleccione un inventario"
             selectedKeys={field.value ? [field.value] : []}
             onSelectionChange={(keys) => field.onChange(Array.from(keys)[0] as string)}
+            isInvalid={!!errors.fkInventario}
+            errorMessage={errors.fkInventario?.message}
           >
             {(inventarios || []).map((inv: any) => (
               <SelectItem key={String(inv.idInventario)} textValue={inv.nombre}>

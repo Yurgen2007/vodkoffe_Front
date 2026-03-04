@@ -1,12 +1,14 @@
 import { Form } from "@heroui/form";
 import { addToast, Input, Select, SelectItem } from "@heroui/react";
 import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 
 import { useLotes } from "@/hooks/Lotes/useLotes";
 import { useInventario } from "@/hooks/Inventarios/useInventario";
 import { useCaracteristica } from "@/hooks/Caracteristicas/useCaracteristicas";
 import { useUnidad } from "@/hooks/UnidadesMedida/useUnidad";
+import { UnidadUpdateSchema } from "@/schemas/Unidad";
 import Buton from "@/components/molecules/Button";
 
 interface FormUpdateUnidadesProps {
@@ -35,6 +37,7 @@ export default function FormUpdateUnidades({
     formState: { errors, isSubmitting },
   } = useForm({
     mode: "onChange",
+    resolver: zodResolver(UnidadUpdateSchema),
   });
 
   // Resetear el formulario con los valores de la unidad cuando cambia
