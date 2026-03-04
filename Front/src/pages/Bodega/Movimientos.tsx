@@ -244,7 +244,7 @@ export const MovimientosPage = () => {
               cantidadAlianza: selectedMovimiento.cantidadAlianza,
               precioUnitario: selectedMovimiento.precioUnitario,
               descripcion: selectedMovimiento.descripcion,
-              nombreCliente: selectedMovimiento.nombreCliente,
+              nombreCliente: selectedMovimiento.nombreCliente || '',
               fkLote: selectedMovimiento.fkLote || 0,
             }}
           />

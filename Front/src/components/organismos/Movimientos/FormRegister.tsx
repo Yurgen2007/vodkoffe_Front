@@ -8,7 +8,7 @@ import { useLotes } from "@/hooks/Lotes/useLotes";
 import { MovimientoCreateSchema, MovimientoCreate } from "@/schemas/Movimientos";
 
 type FormularioProps = {
-  addData: (data: MovimientoCreate) => Promise<void>;
+  addData: (data: any) => Promise<void>;
   onClose: () => void;
   id: string;
   initialData?: MovimientoCreate;
