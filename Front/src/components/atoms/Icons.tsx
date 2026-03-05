@@ -1,11 +1,12 @@
+import loginImg from "../../assets/login.png";
+
 export const FormatrackLogo = () => {
   return (
     <img
-      alt="FarmaMedica Logo"
+      alt="Formatrack Logo"
       height={36}
-      src="\src\assets\login.png"
-      width={86}
-      className="dark:brightness-0 dark:invert"
+      src={loginImg}
+      className="h-8 w-auto object-contain"
     />
   );
 };

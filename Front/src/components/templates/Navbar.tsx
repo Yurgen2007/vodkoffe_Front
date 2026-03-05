@@ -59,7 +59,10 @@ export function Nav({
               </button>
             </DropdownTrigger>
 
-            <DropdownMenu aria-label="Menu de notificaciones" className="max-w-sm w-72">
+            <DropdownMenu
+              aria-label="Menu de notificaciones"
+              className="max-w-sm w-72"
+            >
               <DropdownItem
                 key="notificaciones-header"
                 isReadOnly
