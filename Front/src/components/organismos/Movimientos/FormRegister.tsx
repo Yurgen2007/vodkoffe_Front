@@ -35,18 +35,17 @@ export default function FormularioMovimientos({
     control,
     formState: { errors },
   } = useForm({
-    mode: "onChange",
     resolver: zodResolver(MovimientoCreateSchema),
     defaultValues: initialData ? {
       tipo: initialData.tipo || "VENTA",
-      cantidadVendida: initialData.cantidadVendida ?? 0,
-      cantidadDegustacion: initialData.cantidadDegustacion ?? 0,
-      cantidadAlianza: initialData.cantidadAlianza ?? 0,
-      cantidadInventario: initialData.cantidadInventario ?? 0,
-      precioUnitario: initialData.precioUnitario ?? 0,
+      cantidadVendida: Number(initialData.cantidadVendida) || 0,
+      cantidadDegustacion: Number(initialData.cantidadDegustacion) || 0,
+      cantidadAlianza: Number(initialData.cantidadAlianza) || 0,
+      cantidadInventario: Number(initialData.cantidadInventario) || 0,
+      precioUnitario: Number(initialData.precioUnitario) || 0,
       descripcion: initialData.descripcion || "",
       nombreCliente: initialData.nombreCliente || "",
-      fkLote: initialData.fkLote ?? 0,
+      fkLote: Number(initialData.fkLote) || 0,
     } : {
       tipo: "VENTA",
       cantidadVendida: 0,
@@ -59,6 +58,11 @@ export default function FormularioMovimientos({
       fkLote: 0,
     },
   });
+
+  // Debug: monitorear errores de validación
+  useEffect(() => {
+    console.log('Errores del formulario:', JSON.stringify(errors, null, 2));
+  }, [errors]);
 
   const fkLoteValue = watch("fkLote");
   const cantidadVendida = watch("cantidadVendida");
@@ -74,40 +78,43 @@ export default function FormularioMovimientos({
   // Usar el precio del lote o el precio del initialData
   const precioUnitarioLote = loteSeleccionado?.costoUnitario || initialData?.precioUnitario || 0;
 
-  // Actualizar precio unitario cuando cambia el lote o los datos iniciales
-  useEffect(() => {
-    if (loteSeleccionado?.costoUnitario) {
-      setValue('precioUnitario', loteSeleccionado.costoUnitario);
-    }
-  }, [loteSeleccionado, setValue]);
-
   // Resetear el formulario cuando initialData cambia (para modo edición)
   useEffect(() => {
     if (initialData) {
       reset({
         tipo: initialData.tipo || 'VENTA',
-        cantidadVendida: initialData.cantidadVendida ?? 0,
-        cantidadDegustacion: initialData.cantidadDegustacion ?? 0,
-        cantidadAlianza: initialData.cantidadAlianza ?? 0,
-        cantidadInventario: initialData.cantidadInventario ?? 0,
-        precioUnitario: initialData.precioUnitario ?? 0,
+        cantidadVendida: Number(initialData.cantidadVendida) || 0,
+        cantidadDegustacion: Number(initialData.cantidadDegustacion) || 0,
+        cantidadAlianza: Number(initialData.cantidadAlianza) || 0,
+        cantidadInventario: Number(initialData.cantidadInventario) || 0,
+        precioUnitario: Number(initialData.precioUnitario) || 0,
         descripcion: initialData.descripcion || '',
         nombreCliente: initialData.nombreCliente || '',
-        fkLote: initialData.fkLote ?? 0,
+        fkLote: Number(initialData.fkLote) || 0,
       });
     }
   }, [initialData, reset]);
 
-  // Calcular precio total automáticamente (solo para ventas)
+  // Calcular precio total automáticamente (solo para ventas cobradas)
+  // Degustación y alianza no se cobran, solo ventas
   const calcularPrecioTotal = () => {
-    const cantidadTotal = (cantidadVendida || 0) + (cantidadDegustacion || 0) + (cantidadAlianza || 0);
-    return cantidadTotal * precioUnitarioLote;
+    const cantidadCobrar = (cantidadVendida || 0); // Solo ventas se cobran
+    return cantidadCobrar * (precioUnitarioLote || 0);
   };
 
   const precioTotalCalculado = calcularPrecioTotal();
 
+  const handleFormSubmit = (data: any) => {
+    console.log('=== handleFormSubmit llamado ===');
+    console.log('Datos del formulario:', data);
+    onSubmit(data);
+  };
+
   const onSubmit = async (data: any) => {
+    console.log('=== onSubmit llamado ===');
+    console.log('data recibida:', data);
     try {
+      console.log('Intentando guardar movimiento...');
       // Las validaciones ahora están en el schema Zod
       // Convertir los datos al formato requerido por el tipo
       const movimientoData: MovimientoCreate = {
@@ -116,14 +123,14 @@ export default function FormularioMovimientos({
         cantidadDegustacion: Number(data.cantidadDegustacion) || 0,
         cantidadAlianza: Number(data.cantidadAlianza) || 0,
         cantidadInventario: data.cantidadInventario ? Number(data.cantidadInventario) : undefined,
-        precioUnitario: precioUnitarioLote,
+        precioUnitario: Number(precioUnitarioLote) || 0,
         descripcion: data.descripcion || '',
         nombreCliente: data.nombreCliente || '',
         fkLote: Number(data.fkLote),
       };
       
+      console.log('Enviando movimiento:', movimientoData);
       await addData(movimientoData);
-      onClose();
       addToast({
         title: "Registro exitoso",
         description: "Movimiento agregado correctamente",
@@ -131,11 +138,12 @@ export default function FormularioMovimientos({
         timeout: 3000,
         shouldShowTimeoutProgress: true,
       });
-    } catch (error) {
+      onClose();
+    } catch (error: any) {
       console.error("Error al guardar:", error);
       addToast({
         title: "Error",
-        description: "No se pudo registrar el movimiento",
+        description: error?.message || "No se pudo registrar el movimiento",
         color: "danger",
         timeout: 3000,
         shouldShowTimeoutProgress: true,
@@ -146,14 +154,11 @@ export default function FormularioMovimientos({
   // Determinar si es modo edición
   const isEditing = !!initialData;
 
-  // Keys seleccionadas para el Select de lote
-  const selectedKeys = loteInicialId ? [String(loteInicialId)] : [];
-
   return (
     <Form
       className="w-full space-y-4"
       id={id}
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(handleFormSubmit)}
     >
       {/* Si está editando, solo mostrar campos editables */}
       {isEditing ? (
@@ -190,23 +195,24 @@ export default function FormularioMovimientos({
           <Controller
             name="fkLote"
             control={control}
-            render={({ field }) => (
+            rules={{ required: 'Debe seleccionar un lote' }}
+            render={({ field, fieldState }) => (
               <Select
                 label="Lote"
                 placeholder="Seleccione un lote"
-                defaultSelectedKeys={selectedKeys}
-                selectedKeys={selectedKeys}
+                selectedKeys={field.value ? [String(field.value)] : []}
                 onSelectionChange={(keys) => {
                   const selected = Array.from(keys)[0];
                   if (selected) {
-                    field.onChange(Number(selected));
+                    const numValue = Number(selected);
+                    field.onChange(numValue);
                   }
                 }}
-                isInvalid={!!errors.fkLote}
-                errorMessage={errors.fkLote?.message}
+                isInvalid={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
               >
                 {(lotes || []).map((lote: any) => (
-                  <SelectItem key={String(lote.idLote)}>
+                  <SelectItem key={String(lote.idLote)} textValue={`${lote.codigoLote} (${lote.unidades?.filter((u: any) => u.estado === 'DISPONIBLE').length || 0} disponibles)`}>
                     {lote.codigoLote} ({lote.unidades?.filter((u: any) => u.estado === 'DISPONIBLE').length || 0} disponibles)
                   </SelectItem>
                 ))}
@@ -220,7 +226,7 @@ export default function FormularioMovimientos({
             defaultSelectedKeys={['VENTA']}
             isDisabled
           >
-            <SelectItem key="VENTA">Venta</SelectItem>
+            <SelectItem key="VENTA" textValue="Venta">Venta</SelectItem>
           </Select>
 
           <Controller
@@ -250,10 +256,13 @@ export default function FormularioMovimientos({
                 label="Cantidad Vendida"
                 placeholder="Cantidad vendida"
                 type="number"
-                value={field.value?.toString() || "0"}
-                onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                value={String(field.value ?? 0)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(',', '.');
+                  field.onChange(parseInt(value) || 0);
+                }}
                 isInvalid={!!errors.cantidadVendida}
-                errorMessage={errors.cantidadVendida?.message}
+                errorMessage={errors.cantidadVendida?.message as string}
               />
             )}
           />
@@ -268,10 +277,13 @@ export default function FormularioMovimientos({
                 label="Cantidad Degustación"
                 placeholder="Cantidad para degustación"
                 type="number"
-                value={field.value?.toString() || "0"}
-                onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                value={String(field.value ?? 0)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(',', '.');
+                  field.onChange(parseInt(value) || 0);
+                }}
                 isInvalid={!!errors.cantidadDegustacion}
-                errorMessage={errors.cantidadDegustacion?.message}
+                errorMessage={errors.cantidadDegustacion?.message as string}
               />
             )}
           />
@@ -286,20 +298,23 @@ export default function FormularioMovimientos({
                 label="Cantidad Alianza"
                 placeholder="Cantidad para alianza"
                 type="number"
-                value={field.value?.toString() || "0"}
-                onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                value={String(field.value ?? 0)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(',', '.');
+                  field.onChange(parseInt(value) || 0);
+                }}
                 isInvalid={!!errors.cantidadAlianza}
-                errorMessage={errors.cantidadAlianza?.message}
+                errorMessage={errors.cantidadAlianza?.message as string}
               />
             )}
           />
 
-          {/* Precio unitario del lote (solo lectura) */}
+          {/* Precio unitario del lote (solo lectura) - se calcula automáticamente */}
           <Input
             label="Precio Unitario"
             placeholder="Precio del lote"
-            type="number"
-            value={precioUnitarioLote}
+            type="text"
+            value={String(precioUnitarioLote || 0)}
             isReadOnly
             variant="bordered"
           />

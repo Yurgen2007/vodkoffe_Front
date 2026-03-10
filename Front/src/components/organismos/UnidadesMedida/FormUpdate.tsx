@@ -90,8 +90,8 @@ export const FormUpdate = ({ unidades, unidadId, id, onclose }: Props) => {
               field.onChange(selected === "true");
             }}
           >
-            <SelectItem key="true">Activo</SelectItem>
-            <SelectItem key="false">Inactivo</SelectItem>
+            <SelectItem key="true" textValue="Activo">Activo</SelectItem>
+            <SelectItem key="false" textValue="Inactivo">Inactivo</SelectItem>
           </Select>
         )}
       />

@@ -82,8 +82,8 @@ export default function FormularioCaracteristicas({
             errorMessage={errors.estado?.message}
             isInvalid={!!errors.estado}
           >
-            <SelectItem key="true">Activo</SelectItem>
-            <SelectItem key="false">Inactivo</SelectItem>
+            <SelectItem key="true" textValue="Activo">Activo</SelectItem>
+            <SelectItem key="false" textValue="Inactivo">Inactivo</SelectItem>
           </Select>
         )}
       />

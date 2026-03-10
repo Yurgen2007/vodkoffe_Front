@@ -23,26 +23,20 @@ export const MovimientoCreateSchema = z.object({
     .number({ invalid_type_error: "La cantidad debe ser un número" })
     .min(0, { message: "La cantidad no puede ser negativa" })
     .optional(),
-  precioUnitario: z
-    .number({ invalid_type_error: "El precio debe ser un número" })
-    .min(0, { message: "El precio no puede ser negativo" }),
+  precioUnitario: z.union([
+    z.number(),
+    z.undefined()
+  ]).optional(),
   descripcion: z.string().optional(),
   nombreCliente: z
     .string()
-    .min(1, { message: "El nombre del cliente es requerido" })
-    .min(3, { message: "Debe contener al menos 3 caracteres" }),
+    .min(0)
+    .optional()
+    .or(z.literal('')),
   fechaMovimiento: z.string().optional(),
   fkLote: z
-    .union([z.number(), z.string(), z.undefined()])
-    .refine(
-      (val) => val !== "" && val !== undefined && val !== null && val !== 0,
-      { message: "Debe seleccionar un lote" }
-    )
-    .transform((val) => {
-      if (val === "" || val === undefined || val === null || val === 0) return undefined;
-      return typeof val === "string" ? Number(val) : val;
-    })
-    .optional(),
+    .number({ required_error: "Debe seleccionar un lote" })
+    .min(1, { message: "Debe seleccionar un lote" }),
   fkUsuario: z.number().optional(),
   fkUnidad: z.number().optional(),
 }).refine(

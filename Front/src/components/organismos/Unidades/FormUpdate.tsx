@@ -145,7 +145,7 @@ export default function FormUpdateUnidades({
             onSelectionChange={(keys) => field.onChange(Array.from(keys)[0] as string)}
           >
             {(inventarios || []).map((inv: any) => (
-              <SelectItem key={String(inv.idInventario)}>
+              <SelectItem key={String(inv.idInventario)} textValue={inv.nombre}>
                 {inv.nombre}
               </SelectItem>
             ))}
@@ -165,7 +165,7 @@ export default function FormUpdateUnidades({
             onSelectionChange={(keys) => field.onChange(Array.from(keys)[0] as string)}
           >
             {(caracteristicas || []).map((c: any) => (
-              <SelectItem key={String(c.idCaracteristica)}>
+              <SelectItem key={String(c.idCaracteristica)} textValue={c.nombre}>
                 {c.nombre}
               </SelectItem>
             ))}

@@ -4,16 +4,18 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 
+import Buton from "@/components/molecules/Button";
 import { useUnidad } from "@/hooks/UnidadesMedida/useUnidad";
 import { useLotes } from "@/hooks/Lotes/useLotes";
 import { useCrearMateriasPrimasConLote } from "@/hooks/Lotes/useLotes";
 import { LoteCreate } from "@/types/Lote";
 import { MateriaPrimaCreateSchema } from "@/schemas/MateriaPrima";
+import { useCreateLote } from "@/hooks/Lotes/useLotes";
 
-// Schema para validar el formulario de materias primas (referencia al schema centralizado)
-const MateriaPrimaFormSchema = MateriaPrimaCreateSchema.extend({
+// Schema para validar el formulario de materias primas
+const MateriaPrimaFormSchema = z.object({
   fkLote: z.number().optional(),
-  crearNuevoLote: z.boolean(),
+  crearNuevoLote: z.boolean().default(false),
   nuevoLote: z.object({
     codigoLote: z.string().min(1, "El código es requerido").min(2, "Mínimo 2 caracteres"),
     cantidadUnidades: z.number().min(1, "Mínimo 1"),
@@ -48,6 +50,7 @@ export default function FormularioMateriasPrimas({
   const { unidades: unidadesMedida } = useUnidad();
   const { data: lotes } = useLotes();
   const crearMateriasPrimasConLote = useCrearMateriasPrimasConLote();
+  const createLote = useCreateLote();
   const [crearNuevoLote, setCrearNuevoLote] = useState(false);
 
   const {
@@ -82,34 +85,42 @@ export default function FormularioMateriasPrimas({
 
   const materiasPrimasWatch = watch("materiasPrimas");
 
-  // Calcular costo total automáticamente
-  const calcularCostoTotal = (index: number) => {
-    const mp = materiasPrimasWatch[index];
-    if (mp) {
-      const costoTotal = (Number(mp.cantidad) || 0) * (Number(mp.costoUnitario) || 0);
-      setValue(`materiasPrimas.${index}.costoTotal`, costoTotal);
-    }
+  // Función helper para calcular costo total
+  const getCostoTotal = (cantidad: number, costoUnitario: number): number => {
+    return (Number(cantidad) || 0) * (Number(costoUnitario) || 0);
   };
 
   // Calcular total de todos los costos
   const totalCostos = materiasPrimasWatch?.reduce(
-    (sum: number, mp: any) => sum + (Number(mp.costoTotal) || 0),
+    (sum: number, mp: any) => sum + getCostoTotal(mp.cantidad, mp.costoUnitario),
     0
   ) || 0;
 
   const onSubmit = async (data: any) => {
+    console.log("Form submitted with data:", data);
     try {
       let loteId = data.fkLote;
 
       // Si hay que crear un nuevo lote
-      if (data.crearNuevoLote && data.nuevoLote && addLote) {
-        const nuevoLote = await addLote({
-          codigoLote: data.nuevoLote.codigoLote,
-          fechaProduccion: data.nuevoLote.fechaProduccion,
-          fechaVencimiento: data.nuevoLote.fechaVencimiento,
-          costoUnitario: 0,
-        });
-        loteId = nuevoLote.idLote;
+      if (data.crearNuevoLote && data.nuevoLote) {
+        if (addLote) {
+          const nuevoLote = await addLote({
+            codigoLote: data.nuevoLote.codigoLote,
+            fechaProduccion: data.nuevoLote.fechaProduccion,
+            fechaVencimiento: data.nuevoLote.fechaVencimiento,
+            costoUnitario: 0,
+          });
+          loteId = nuevoLote.idLote;
+        } else if (createLote) {
+          // Usar el hook directo si addLote no está disponible
+          const nuevoLote = await createLote.mutateAsync({
+            codigoLote: data.nuevoLote.codigoLote,
+            fechaProduccion: data.nuevoLote.fechaProduccion,
+            fechaVencimiento: data.nuevoLote.fechaVencimiento,
+            costoUnitario: 0,
+          });
+          loteId = nuevoLote.idLote;
+        }
       }
 
       // Si hay un lote seleccionado o creado, asociar las materias primas
@@ -131,17 +142,19 @@ export default function FormularioMateriasPrimas({
         }
       } else {
         // Si no hay lote, solo crear las materias primas como catálogo
-        for (const mp of data.materiasPrimas) {
-          if (mp.nombre.trim()) {
-            const materiaPrimaData = {
-              nombre: mp.nombre,
-              descripcion: mp.descripcion || undefined,
-              cantidad: Number(mp.cantidad) || 1,
-              costoUnitario: Number(mp.costoUnitario) || 0,
-              estado: true,
-              fkUnidadMedida: mp.fkUnidadMedida,
-            };
-            await addData(materiaPrimaData);
+        if (addData) {
+          for (const mp of data.materiasPrimas) {
+            if (mp.nombre && mp.nombre.trim()) {
+              const materiaPrimaData = {
+                nombre: mp.nombre,
+                descripcion: mp.descripcion || undefined,
+                cantidad: Number(mp.cantidad) || 1,
+                costoUnitario: Number(mp.costoUnitario) || 0,
+                estado: true,
+                fkUnidadMedida: mp.fkUnidadMedida,
+              };
+              await addData(materiaPrimaData);
+            }
           }
         }
       }
@@ -154,13 +167,22 @@ export default function FormularioMateriasPrimas({
         timeout: 3000,
         shouldShowTimeoutProgress: true,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al guardar:", error);
+      
+      // Extraer mensaje de error del backend
+      let mensajeError = "Error al guardar las materias primas";
+      if (error?.response?.data?.message) {
+        mensajeError = error.response.data.message;
+      } else if (error?.message) {
+        mensajeError = error.message;
+      }
+      
       addToast({
         title: "Error",
-        description: "Error al guardar las materias primas",
+        description: mensajeError,
         color: "danger",
-        timeout: 3000,
+        timeout: 5000,
         shouldShowTimeoutProgress: true,
       });
     }
@@ -177,8 +199,7 @@ export default function FormularioMateriasPrimas({
         <h3 className="text-lg font-semibold mb-3">Asociar a Lote</h3>
         
         <div className="flex gap-2 mb-3">
-          <Button
-            size="sm"
+          <Buton
             variant={!crearNuevoLote ? "solid" : "bordered"}
             color={!crearNuevoLote ? "primary" : "default"}
             onPress={() => {
@@ -187,9 +208,8 @@ export default function FormularioMateriasPrimas({
             }}
           >
             Seleccionar Lote Existente
-          </Button>
-          <Button
-            size="sm"
+          </Buton>
+          <Buton
             variant={crearNuevoLote ? "solid" : "bordered"}
             color={crearNuevoLote ? "primary" : "default"}
             onPress={() => {
@@ -198,7 +218,7 @@ export default function FormularioMateriasPrimas({
             }}
           >
             Crear Nuevo Lote
-          </Button>
+          </Buton>
         </div>
 
         {!crearNuevoLote ? (
@@ -270,14 +290,13 @@ export default function FormularioMateriasPrimas({
             <div className="flex justify-between items-center mb-3">
               <span className="font-medium">Materia Prima #{index + 1}</span>
               {index > 0 && (
-                <Button
-                  size="sm"
+                <Buton
                   variant="light"
                   color="danger"
                   onPress={() => remove(index)}
                 >
                   Eliminar
-                </Button>
+                </Buton>
               )}
             </div>
 
@@ -349,14 +368,17 @@ export default function FormularioMateriasPrimas({
                 label="Costo Total"
                 type="number"
                 isReadOnly
-                value={materiasPrimasWatch?.[index]?.costoTotal?.toFixed(2) || "0.00"}
+                value={getCostoTotal(
+                  Number(materiasPrimasWatch?.[index]?.cantidad) || 0,
+                  Number(materiasPrimasWatch?.[index]?.costoUnitario) || 0
+                ).toFixed(2)}
                 className="bg-white dark:bg-gray-800"
               />
             </div>
           </div>
         ))}
 
-        <Button
+        <Buton
           type="button"
           variant="flat"
           color="primary"
@@ -364,7 +386,7 @@ export default function FormularioMateriasPrimas({
           className="w-full mt-2"
         >
           + Agregar Otra Materia Prima
-        </Button>
+        </Buton>
       </div>
 
       {/* Total de costos */}
@@ -374,6 +396,25 @@ export default function FormularioMateriasPrimas({
           <span className="text-primary">${totalCostos.toFixed(2)}</span>
         </div>
       </div>
+
+      <Buton 
+        color="primary"
+        className="w-full"
+        onPress={() => {
+          console.log("Botón cliqueado - Intentando guardar");
+          handleSubmit(
+            (data) => {
+              console.log("handleSubmit exitoso con datos:", data);
+              onSubmit(data);
+            }, 
+            (errors) => {
+              console.log("Errores de validación:", errors);
+            }
+          )();
+        }}
+      >
+        Guardar
+      </Buton>
     </Form>
   );
 }

@@ -8,6 +8,7 @@ import { useMovimientos, useCreateMovimiento, useDeleteMovimiento, useUpdateMovi
 import { Movimiento, MovimientoCreate } from '@/types/Movimiento';
 import Modall from '@/components/organismos/modal';
 import FormularioMovimientos from '@/components/organismos/Movimientos/FormRegister';
+import FormUpdateMovimiento from '@/components/organismos/Movimientos/FormUpdate';
 import usePermissions from '@/hooks/Usuarios/usePermissions';
 import { formatNumber } from '@/utils/formatNumber';
 
@@ -45,14 +46,12 @@ export const MovimientosPage = () => {
     setIsOpenUpdate(true);
   };
 
-  const handleUpdateMovimiento = async (movimiento: MovimientoCreate) => {
-    if (selectedMovimiento) {
-      try {
-        await updateMovimiento.mutateAsync({ id: selectedMovimiento.idMovimiento, data: movimiento });
-        handleCloseUpdate();
-      } catch (err) {
-        console.error('Error al actualizar movimiento:', err);
-      }
+  const handleUpdateMovimiento = async (id: number, data: MovimientoCreate) => {
+    try {
+      await updateMovimiento.mutateAsync({ id, data });
+      handleCloseUpdate();
+    } catch (err) {
+      console.error('Error al actualizar movimiento:', err);
     }
   };
 
@@ -232,21 +231,12 @@ export const MovimientosPage = () => {
         onOpenChange={handleCloseUpdate}
       >
         {selectedMovimiento && (
-          <FormularioMovimientos
+          <FormUpdateMovimiento
             key={`movimiento-${selectedMovimiento.idMovimiento}`}
-            addData={handleUpdateMovimiento}
+            movimiento={selectedMovimiento}
+            updateData={handleUpdateMovimiento}
             onClose={handleCloseUpdate}
             id="form-movimiento-update"
-            initialData={{
-              tipo: selectedMovimiento.tipo as 'VENTA' | 'NO_VENTA' | 'INVENTARIO',
-              cantidadVendida: selectedMovimiento.cantidadVendida,
-              cantidadDegustacion: selectedMovimiento.cantidadDegustacion,
-              cantidadAlianza: selectedMovimiento.cantidadAlianza,
-              precioUnitario: selectedMovimiento.precioUnitario,
-              descripcion: selectedMovimiento.descripcion,
-              nombreCliente: selectedMovimiento.nombreCliente || '',
-              fkLote: selectedMovimiento.fkLote || 0,
-            }}
           />
         )}
       </Modall>

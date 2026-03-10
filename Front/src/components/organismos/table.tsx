@@ -107,8 +107,10 @@ const Globaltable = <T extends { key?: string; estado?: boolean | string } = {
 
     // Filtro por lote
     if (loteFiltro !== "todos") {
+      const filtroNum = parseInt(loteFiltro);
       result = result.filter((item: any) => {
-        return item.loteId === parseInt(loteFiltro);
+        // Usar == para comparar número con string o undefined
+        return item.loteId == filtroNum;
       });
     }
 

@@ -89,11 +89,13 @@ export const MateriasPrimasPage = () => {
     }
   };
 
-  const handleAddNewLote = async (lote: LoteCreate) => {
+  const handleAddNewLote = async (lote: LoteCreate): Promise<{ idLote: number }> => {
     try {
-      await createLote.mutateAsync(lote);
+      const result = await createLote.mutateAsync(lote);
+      return { idLote: result.idLote };
     } catch (err) {
       console.error("Error al crear lote:", err);
+      throw err;
     }
   };
 
@@ -228,6 +230,7 @@ export const MateriasPrimasPage = () => {
       let totalLote = 0;
       let cantidadTotal = 0;
       
+      // Calcular manualmente desde los datos de materias primas
       for (const mp of materiasDelLote) {
         totalLote += Number(mp.costoTotal || 0);
         cantidadTotal += Number(mp.cantidad || 0);
@@ -341,12 +344,6 @@ export const MateriasPrimasPage = () => {
           addLote={handleAddNewLote}
           id="materia-prima-form"
           onClose={handleClose}
-        />
-        <Buton
-          className="w-full rounded-xl"
-          form="materia-prima-form"
-          text="Guardar"
-          type="submit"
         />
       </Modall>
 

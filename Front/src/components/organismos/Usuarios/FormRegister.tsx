@@ -140,8 +140,8 @@ export default function FormularioU({ addData, onClose, id }: FormularioProps) {
               value={field.value ? "true" : "false"}
               onChange={(e) => field.onChange(e.target.value === "true")}
             >
-              <SelectItem key="true">Activo</SelectItem>
-              <SelectItem key="false">Inactivo</SelectItem>
+              <SelectItem key="true" textValue="Activo">Activo</SelectItem>
+              <SelectItem key="false" textValue="Inactivo">Inactivo</SelectItem>
             </Select>
           )}
         />
@@ -190,7 +190,7 @@ export default function FormularioU({ addData, onClose, id }: FormularioProps) {
                         </SelectItem>
                       ))
                   ) : (
-                    <SelectItem>No hay roles disponibles</SelectItem>
+                    <SelectItem textValue="No hay roles disponibles">No hay roles disponibles</SelectItem>
                   )}
                 </Select>
                 <Buton

@@ -153,7 +153,7 @@ export const FormUpdate = ({ Users, userId, id, onclose }: FormuProps) => {
               }}
             >
               {roles?.map((rol) => (
-                <SelectItem key={`${rol.idRol}`}>{rol.nombre}</SelectItem>
+                <SelectItem key={`${rol.idRol}`} textValue={rol.nombre}>{rol.nombre}</SelectItem>
               ))}
             </Select>
             <Buton

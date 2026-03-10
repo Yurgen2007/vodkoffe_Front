@@ -56,8 +56,24 @@ export default function FormularioLotes({
         timeout: 3000,
         shouldShowTimeoutProgress: true,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al guardar:", error);
+      
+      // Extraer mensaje de error del backend
+      let mensajeError = "Error al guardar el lote";
+      if (error?.response?.data?.message) {
+        mensajeError = error.response.data.message;
+      } else if (error?.message) {
+        mensajeError = error.message;
+      }
+      
+      addToast({
+        title: "Error",
+        description: mensajeError,
+        color: "danger",
+        timeout: 5000,
+        shouldShowTimeoutProgress: true,
+      });
     }
   };
 

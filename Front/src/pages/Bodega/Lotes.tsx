@@ -63,13 +63,14 @@ export const LotesPage = () => {
       key: 'cantidadUnidades', 
       label: 'Unidades',
       render: (lote: LoteWithKey) => {
-        // Mostrar: unidades registradas / máximo permitido (12)
-        const registradas = lote.cantidadUnidades || 0;
+        // Mostrar: unidades disponibles / máximo permitido (12)
+        // cantidadActual = unidades con estado DISPONIBLE
+        const disponibles = lote.cantidadActual ?? lote.cantidadUnidades ?? 0;
         const maximo = 12; // MAX_UNIDADES_POR_LOTE
         
         return (
           <span className="font-bold text-blue-600">
-            {registradas}/{maximo}
+            {disponibles}/{maximo}
           </span>
         );
       }
